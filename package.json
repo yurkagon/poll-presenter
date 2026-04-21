@@ -12,7 +12,8 @@
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "vite build --config web/vite.config.ts",
     "build:backend": "tsc -p tsconfig.json --skipLibCheck",
-    "start": "node dist/src/main"
+    "start": "node dist/src/main",
+    "prod": "pm2 start dist/src/main.js --name poll-presenter"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",
