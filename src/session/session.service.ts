@@ -63,7 +63,7 @@ const SESSION_CODE = '88309117';
 @Injectable()
 export class SessionService {
   private activeQuestionId = QUESTIONS[0].id;
-  private resetVersion = 0;
+  private subSession = crypto.randomUUID();
 
   /** Votes keyed by `questionId:optionId` */
   private readonly votes = new Map<string, number>();
@@ -82,7 +82,7 @@ export class SessionService {
       code: SESSION_CODE,
       questions: QUESTIONS,
       activeQuestionId: this.activeQuestionId,
-      resetVersion: this.resetVersion,
+      subSession: this.subSession,
     };
   }
 
@@ -131,7 +131,7 @@ export class SessionService {
 
     this.votes.clear();
     this.activeQuestionId = QUESTIONS[0].id;
-    this.resetVersion += 1;
+    this.subSession = crypto.randomUUID();
 
     return {
       session: this.getSession(code),

@@ -15,7 +15,7 @@ export interface Session {
   code: string;
   questions: SessionQuestion[];
   activeQuestionId: string;
-  resetVersion: number;
+  subSession: string;
 }
 
 // ─── Results ─────────────────────────────────────────────────────────────────

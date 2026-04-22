@@ -6,14 +6,14 @@ import { CheckCircle2 } from 'lucide-react';
 import type { Session, SessionResults } from '@shared/types';
 
 const voteKey = (code: string, questionId: string) => `voted:${code}:${questionId}`;
-const resetVersionKey = (code: string) => `resetVersion:${code}`;
+const subSessionKey = (code: string) => `subSession:${code}`;
 
-/** Clear all vote keys if server resetVersion is newer than what's stored locally */
-function syncResetVersion(code: string, s: Session) {
-  const stored = Number(localStorage.getItem(resetVersionKey(code)) ?? -1);
-  if (s.resetVersion !== stored) {
+/** Clear all vote keys if server subSession differs from what's stored locally */
+function syncSubSession(code: string, s: Session) {
+  const stored = localStorage.getItem(subSessionKey(code));
+  if (s.subSession !== stored) {
     s.questions.forEach((q) => localStorage.removeItem(voteKey(code, q.id)));
-    localStorage.setItem(resetVersionKey(code), String(s.resetVersion));
+    localStorage.setItem(subSessionKey(code), s.subSession);
   }
 }
 
@@ -66,7 +66,7 @@ export function ParticipantPage() {
   /** Sync vote state from localStorage for the given question */
   function syncVoteState(s: Session) {
     if (!code) return;
-    syncResetVersion(code, s);
+    syncSubSession(code, s);
     const saved = localStorage.getItem(voteKey(code, s.activeQuestionId));
     if (saved) {
       setSelectedId(saved);
@@ -109,7 +109,7 @@ export function ParticipantPage() {
       ({ session: s }: { session: Session; results: SessionResults }) => {
         if (code) {
           s.questions.forEach((q) => localStorage.removeItem(voteKey(code, q.id)));
-          localStorage.setItem(resetVersionKey(code), String(s.resetVersion));
+          localStorage.setItem(subSessionKey(code), s.subSession);
         }
         setSession(s);
         setSelectedId(null);
@@ -132,7 +132,7 @@ export function ParticipantPage() {
       setSelectedId(optionId);
       setHasVoted(true);
       localStorage.setItem(voteKey(code, session.activeQuestionId), optionId);
-      localStorage.setItem(resetVersionKey(code), String(session.resetVersion));
+      localStorage.setItem(subSessionKey(code), session.subSession);
     } catch (e: any) {
       setError(e.message);
     } finally {
