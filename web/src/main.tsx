@@ -5,6 +5,7 @@ import './index.css';
 import { HomePage } from './pages/HomePage';
 import { PresenterPage } from './pages/PresenterPage';
 import { ParticipantPage } from './pages/ParticipantPage';
+import { ScreenPage } from './pages/ScreenPage';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -13,6 +14,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<HomePage />} />
         <Route path="/present/:code" element={<PresenterPage />} />
         <Route path="/join/:code" element={<ParticipantPage />} />
+        <Route path="/screen/:code" element={<ScreenPage />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
