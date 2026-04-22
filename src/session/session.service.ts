@@ -63,6 +63,7 @@ const SESSION_CODE = '88309117';
 @Injectable()
 export class SessionService {
   private activeQuestionId = QUESTIONS[0].id;
+  private resetVersion = 0;
 
   /** Votes keyed by `questionId:optionId` */
   private readonly votes = new Map<string, number>();
@@ -81,6 +82,7 @@ export class SessionService {
       code: SESSION_CODE,
       questions: QUESTIONS,
       activeQuestionId: this.activeQuestionId,
+      resetVersion: this.resetVersion,
     };
   }
 
@@ -122,5 +124,18 @@ export class SessionService {
 
     this.activeQuestionId = questionId;
     return this.getSession(code);
+  }
+
+  public resetSession(code: string): { session: Session; results: SessionResults } {
+    if (code !== SESSION_CODE) throw new NotFoundException(`Session "${code}" not found`);
+
+    this.votes.clear();
+    this.activeQuestionId = QUESTIONS[0].id;
+    this.resetVersion += 1;
+
+    return {
+      session: this.getSession(code),
+      results: this.getResults(code),
+    };
   }
 }

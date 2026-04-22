@@ -48,4 +48,13 @@ export class SessionController {
     this.sessionGateway.broadcastQuestionChanged(code, session, results);
     return session;
   }
+
+  /** POST /api/session/:code/reset — clears all votes and returns to Q1 */
+  @Post(':code/reset')
+  @HttpCode(HttpStatus.OK)
+  public resetSession(@Param('code') code: string) {
+    const { session, results } = this.sessionService.resetSession(code);
+    this.sessionGateway.broadcastReset(code, session, results);
+    return session;
+  }
 }

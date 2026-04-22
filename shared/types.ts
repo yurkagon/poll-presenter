@@ -15,6 +15,7 @@ export interface Session {
   code: string;
   questions: SessionQuestion[];
   activeQuestionId: string;
+  resetVersion: number;
 }
 
 // ─── Results ─────────────────────────────────────────────────────────────────
@@ -48,4 +49,5 @@ export const WS_EVENTS = {
   JOIN_SESSION: 'join_session',
   RESULTS_UPDATED: 'results_updated',
   QUESTION_CHANGED: 'question_changed',
+  SESSION_RESET: 'session_reset',
 } as const;

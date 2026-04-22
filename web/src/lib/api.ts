@@ -37,4 +37,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+
+  resetSession: (code: string) =>
+    request<Session>(`/session/${code}/reset`, { method: 'POST' }),
 };

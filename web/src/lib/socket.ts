@@ -20,4 +20,11 @@ export function onQuestionChanged(
   return () => socket.off(WS_EVENTS.QUESTION_CHANGED, cb);
 }
 
+export function onSessionReset(
+  cb: (payload: { session: Session; results: SessionResults }) => void,
+) {
+  socket.on(WS_EVENTS.SESSION_RESET, cb);
+  return () => socket.off(WS_EVENTS.SESSION_RESET, cb);
+}
+
 export { socket };

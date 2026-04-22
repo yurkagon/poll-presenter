@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import QRCode from 'react-qr-code';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { api } from '@/lib/api';
-import { joinSession, onResultsUpdated, onQuestionChanged } from '@/lib/socket';
+import { joinSession, onResultsUpdated, onQuestionChanged, onSessionReset } from '@/lib/socket';
 import { Button } from '@/components/ui/button';
 import type { Session, SessionResults } from '@shared/types';
 
@@ -50,6 +50,7 @@ export function PresenterPage() {
   const [results, setResults] = useState<SessionResults | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const joinUrl = `${window.location.origin}/join/${code}`;
   const formattedCode = code ? `${code.slice(0, 4)} ${code.slice(4)}` : '';
@@ -77,10 +78,17 @@ export function PresenterPage() {
       setResults(r);
       setSwitching(false);
     });
+    const unsubReset = onSessionReset(({ session: s, results: r }) => {
+      setSession(s);
+      setResults(r);
+      setSwitching(false);
+      setResetting(false);
+    });
 
     return () => {
       unsubResults();
       unsubQuestion();
+      unsubReset();
     };
   }, [code, loadData]);
 
@@ -94,6 +102,18 @@ export function PresenterPage() {
       await api.setQuestion(code, { questionId: session.questions[nextIdx].id });
     } catch {
       setSwitching(false);
+    }
+  }
+
+  async function handleReset() {
+    if (!code || resetting) return;
+    const confirmed = window.confirm('Скинути всі голоси та повернутись до першого питання?');
+    if (!confirmed) return;
+    setResetting(true);
+    try {
+      await api.resetSession(code);
+    } catch {
+      setResetting(false);
     }
   }
 
@@ -117,9 +137,21 @@ export function PresenterPage() {
           <span className="text-2xl">🗳</span>
           <span className="font-bold text-gray-900 text-lg">Poll Presenter</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 rounded-full px-4 py-1.5 border">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          Live · {results.totalVotes} голос{results.totalVotes === 1 ? '' : results.totalVotes < 5 ? 'и' : 'ів'}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReset}
+            disabled={resetting}
+            className="gap-1.5 text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Скинути
+          </Button>
+          <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 rounded-full px-4 py-1.5 border">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Live · {results.totalVotes} голос{results.totalVotes === 1 ? '' : results.totalVotes < 5 ? 'и' : 'ів'}
+          </div>
         </div>
       </header>
 

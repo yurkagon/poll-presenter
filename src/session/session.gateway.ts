@@ -73,4 +73,15 @@ export class SessionGateway
       .to(`session:${sessionCode}`)
       .emit(WS_EVENTS.QUESTION_CHANGED, { session, results });
   }
+
+  /** Broadcast session reset to all clients — clears votes and returns to Q1 */
+  public broadcastReset(
+    sessionCode: string,
+    session: Session,
+    results: SessionResults,
+  ): void {
+    this.server
+      .to(`session:${sessionCode}`)
+      .emit(WS_EVENTS.SESSION_RESET, { session, results });
+  }
 }

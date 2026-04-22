@@ -1,11 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '@/lib/api';
-import { joinSession, onQuestionChanged } from '@/lib/socket';
+import { joinSession, onQuestionChanged, onSessionReset } from '@/lib/socket';
 import { CheckCircle2 } from 'lucide-react';
 import type { Session, SessionResults } from '@shared/types';
 
 const voteKey = (code: string, questionId: string) => `voted:${code}:${questionId}`;
+const resetVersionKey = (code: string) => `resetVersion:${code}`;
+
+/** Clear all vote keys if server resetVersion is newer than what's stored locally */
+function syncResetVersion(code: string, s: Session) {
+  const stored = Number(localStorage.getItem(resetVersionKey(code)) ?? -1);
+  if (s.resetVersion !== stored) {
+    s.questions.forEach((q) => localStorage.removeItem(voteKey(code, q.id)));
+    localStorage.setItem(resetVersionKey(code), String(s.resetVersion));
+  }
+}
 
 // ─── Option button ────────────────────────────────────────────────────────────
 
@@ -56,6 +66,7 @@ export function ParticipantPage() {
   /** Sync vote state from localStorage for the given question */
   function syncVoteState(s: Session) {
     if (!code) return;
+    syncResetVersion(code, s);
     const saved = localStorage.getItem(voteKey(code, s.activeQuestionId));
     if (saved) {
       setSelectedId(saved);
@@ -81,7 +92,6 @@ export function ParticipantPage() {
     const unsubQuestion = onQuestionChanged(
       ({ session: s }: { session: Session; results: SessionResults }) => {
         setSession(s);
-        // check if user already voted on the incoming question
         const saved = code
           ? localStorage.getItem(voteKey(code, s.activeQuestionId))
           : null;
@@ -95,7 +105,22 @@ export function ParticipantPage() {
       },
     );
 
-    return unsubQuestion;
+    const unsubReset = onSessionReset(
+      ({ session: s }: { session: Session; results: SessionResults }) => {
+        if (code) {
+          s.questions.forEach((q) => localStorage.removeItem(voteKey(code, q.id)));
+          localStorage.setItem(resetVersionKey(code), String(s.resetVersion));
+        }
+        setSession(s);
+        setSelectedId(null);
+        setHasVoted(false);
+      },
+    );
+
+    return () => {
+      unsubQuestion();
+      unsubReset();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
 
@@ -107,6 +132,7 @@ export function ParticipantPage() {
       setSelectedId(optionId);
       setHasVoted(true);
       localStorage.setItem(voteKey(code, session.activeQuestionId), optionId);
+      localStorage.setItem(resetVersionKey(code), String(session.resetVersion));
     } catch (e: any) {
       setError(e.message);
     } finally {
