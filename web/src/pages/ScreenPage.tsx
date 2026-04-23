@@ -29,10 +29,10 @@ function ResultBar({
           <span className="text-2xl font-normal text-gray-400 dark:text-gray-500 ml-3">({pct}%)</span>
         </span>
       </div>
-      <div className="h-16 w-full rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+      <div className="h-16 w-full rounded-full bg-gray-100 dark:bg-[#2a2a2a] overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ease-out ${color}`}
-          style={{ width: `${pct}%`, minWidth: count > 0 ? '4rem' : '0' }}
+          style={{ width: `${pct}%`, minWidth: count > 0 ? '4rem' : '0', filter: 'var(--bar-filter, none)' }}
         />
       </div>
     </div>
@@ -100,7 +100,7 @@ export function ScreenPage() {
   const total = session.questions.length;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 flex transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-[#141414] flex transition-colors duration-300">
 
       {/* Left: question + results */}
       <div className="flex-1 flex flex-col justify-center px-16 py-12 space-y-12">
@@ -144,17 +144,17 @@ export function ScreenPage() {
       </div>
 
       {/* Right: QR panel */}
-      <aside className="w-96 bg-gray-50 dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center px-10 py-12 space-y-10 flex-shrink-0">
+      <aside className="w-96 bg-gray-50 dark:bg-[#1c1c1c] border-l border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center px-10 py-12 space-y-10 flex-shrink-0">
         <p className="text-base font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
           Відскануй для участі
         </p>
 
-        <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-[#1c1c1c] rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-[#2a2a2a]">
           <QRCode
             value={joinUrl}
             size={280}
             fgColor={isDark ? '#ffffff' : '#1e1b4b'}
-            bgColor={isDark ? '#1f2937' : '#ffffff'}
+            bgColor={isDark ? '#1c1c1c' : '#ffffff'}
           />
         </div>
 

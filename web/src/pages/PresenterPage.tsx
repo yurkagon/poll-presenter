@@ -31,10 +31,10 @@ function ResultBar({
           <span className="text-base font-normal text-gray-400 dark:text-gray-500 ml-1">({pct}%)</span>
         </span>
       </div>
-      <div className="h-10 w-full rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+      <div className="h-10 w-full rounded-full bg-gray-100 dark:bg-[#2a2a2a] overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ease-out ${color}`}
-          style={{ width: `${pct}%`, minWidth: count > 0 ? '2.5rem' : '0' }}
+          style={{ width: `${pct}%`, minWidth: count > 0 ? '2.5rem' : '0', filter: 'var(--bar-filter, none)' }}
         />
       </div>
     </div>
@@ -148,7 +148,7 @@ export function PresenterPage() {
   const total = session.questions.length;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 flex flex-col transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-[#141414] flex flex-col transition-colors duration-300">
 
       {/* Header */}
       <header className="border-b border-gray-100 dark:border-gray-800 px-8 py-4 flex items-center justify-between">
@@ -262,17 +262,17 @@ export function PresenterPage() {
         </div>
 
         {/* Right: QR panel */}
-        <aside className="bg-gray-50 dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center px-8 py-10 space-y-6">
+        <aside className="bg-gray-50 dark:bg-[#1c1c1c] border-l border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center px-8 py-10 space-y-6">
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
             Відскануй для участі
           </p>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-[#1c1c1c] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-[#2a2a2a]">
             <QRCode
               value={joinUrl}
               size={170}
               fgColor={isDark ? '#ffffff' : '#1e1b4b'}
-              bgColor={isDark ? '#1f2937' : '#ffffff'}
+              bgColor={isDark ? '#1c1c1c' : '#ffffff'}
             />
           </div>
 

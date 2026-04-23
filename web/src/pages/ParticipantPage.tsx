@@ -43,8 +43,8 @@ function OptionButton({
         selected
           ? `${colorClass} text-white border-transparent shadow-lg scale-[1.02]`
           : disabled
-          ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 border-gray-200 dark:border-gray-700 cursor-not-allowed'
-          : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:shadow-md hover:-translate-y-0.5 active:scale-95',
+          ? 'bg-gray-100 dark:bg-[#222] text-gray-400 dark:text-gray-600 border-gray-200 dark:border-[#333] cursor-not-allowed'
+          : 'bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-white border-gray-200 dark:border-[#333] hover:shadow-md hover:-translate-y-0.5 active:scale-95',
       ].join(' ')}
     >
       {label}
@@ -178,7 +178,7 @@ export function ParticipantPage() {
   const formattedCode = code ? `${code.slice(0, 4)} ${code.slice(4)}` : '';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-950 dark:to-gray-900 flex flex-col transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-[#141414] dark:to-[#1a1a1a] flex flex-col transition-colors duration-300">
 
       {/* Header */}
       <header className="px-6 pt-8 pb-4 text-center">
