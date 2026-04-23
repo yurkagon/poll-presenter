@@ -2,6 +2,7 @@ import type {
   Session,
   SessionResults,
   VotePayload,
+  RevotePayload,
   SetQuestionPayload,
 } from '@shared/types';
 
@@ -34,6 +35,12 @@ export const api = {
 
   setQuestion: (code: string, payload: SetQuestionPayload) =>
     request<Session>(`/session/${code}/question`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  revote: (code: string, payload: RevotePayload) =>
+    request<SessionResults>(`/session/${code}/revote`, {
       method: 'POST',
       body: JSON.stringify(payload),
     }),

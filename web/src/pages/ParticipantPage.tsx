@@ -140,6 +140,21 @@ export function ParticipantPage() {
     }
   }
 
+  async function handleRevote(optionId: string) {
+    if (!code || !session || !hasVoted || !selectedId || loading) return;
+    if (optionId === selectedId) return;
+    setLoading(true);
+    try {
+      await api.revote(code, { fromOptionId: selectedId, toOptionId: optionId });
+      setSelectedId(optionId);
+      localStorage.setItem(voteKey(code, session.activeQuestionId), optionId);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   if (error) return (
     <div className="min-h-screen flex items-center justify-center p-6 text-center">
       <div className="space-y-2">
@@ -209,15 +224,18 @@ export function ParticipantPage() {
               key={opt.id}
               label={opt.label}
               selected={selectedId === opt.id}
-              disabled={hasVoted || loading}
+              disabled={(!hasVoted && loading) || (hasVoted && opt.id === selectedId)}
               colorClass={OPTION_COLORS[i % OPTION_COLORS.length]}
-              onClick={() => handleVote(opt.id)}
+              onClick={() => hasVoted ? handleRevote(opt.id) : handleVote(opt.id)}
             />
           ))}
         </div>
 
         {!hasVoted && (
           <p className="text-xs text-gray-400 text-center">Натисни варіант відповіді вище</p>
+        )}
+        {hasVoted && (
+          <p className="text-xs text-gray-400 text-center">Натисни інший варіант, щоб змінити відповідь</p>
         )}
       </main>
 

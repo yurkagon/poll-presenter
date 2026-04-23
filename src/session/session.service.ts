@@ -118,6 +118,27 @@ export class SessionService {
     return this.getResults(code);
   }
 
+  public revote(code: string, fromOptionId: string, toOptionId: string): SessionResults {
+    if (code !== SESSION_CODE) throw new NotFoundException(`Session "${code}" not found`);
+
+    const activeQuestion = this.findQuestion(this.activeQuestionId)!;
+    if (!activeQuestion.options.find((o) => o.id === fromOptionId)) {
+      throw new NotFoundException(`Option "${fromOptionId}" not found`);
+    }
+    if (!activeQuestion.options.find((o) => o.id === toOptionId)) {
+      throw new NotFoundException(`Option "${toOptionId}" not found`);
+    }
+
+    const fromKey = this.voteKey(this.activeQuestionId, fromOptionId);
+    const toKey = this.voteKey(this.activeQuestionId, toOptionId);
+
+    const fromCount = this.votes.get(fromKey) ?? 0;
+    this.votes.set(fromKey, Math.max(0, fromCount - 1));
+    this.votes.set(toKey, (this.votes.get(toKey) ?? 0) + 1);
+
+    return this.getResults(code);
+  }
+
   public setActiveQuestion(code: string, questionId: string): Session {
     if (code !== SESSION_CODE) throw new NotFoundException(`Session "${code}" not found`);
     if (!this.findQuestion(questionId)) throw new NotFoundException(`Question "${questionId}" not found`);

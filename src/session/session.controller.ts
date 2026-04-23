@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { SessionGateway } from './session.gateway';
-import { VotePayload, SetQuestionPayload } from '../../shared/types';
+import { VotePayload, RevotePayload, SetQuestionPayload } from '../../shared/types';
 
 @Controller('session')
 export class SessionController {
@@ -35,6 +35,15 @@ export class SessionController {
   @HttpCode(HttpStatus.OK)
   public castVote(@Param('code') code: string, @Body() body: VotePayload) {
     const results = this.sessionService.castVote(code, body.optionId);
+    this.sessionGateway.broadcastResults(code, results);
+    return results;
+  }
+
+  /** POST /api/session/:code/revote — participant changes their vote */
+  @Post(':code/revote')
+  @HttpCode(HttpStatus.OK)
+  public revote(@Param('code') code: string, @Body() body: RevotePayload) {
+    const results = this.sessionService.revote(code, body.fromOptionId, body.toOptionId);
     this.sessionGateway.broadcastResults(code, results);
     return results;
   }

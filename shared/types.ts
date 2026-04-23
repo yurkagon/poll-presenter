@@ -39,6 +39,11 @@ export interface VotePayload {
   optionId: string;
 }
 
+export interface RevotePayload {
+  fromOptionId: string;
+  toOptionId: string;
+}
+
 export interface SetQuestionPayload {
   questionId: string;
 }
