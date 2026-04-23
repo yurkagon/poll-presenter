@@ -208,8 +208,8 @@ export function PresenterPage() {
 
           {/* Question — anchored to top */}
           <div className="pt-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-3">
-              Питання {activeIdx + 1} з {total}
+            <p className="text-sm font-semibold uppercase tracking-widest text-violet-500 mb-3">
+              Питання {activeIdx + 1}
             </p>
             <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
               {activeQ?.text}

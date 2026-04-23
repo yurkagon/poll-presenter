@@ -23,8 +23,8 @@ function ResultColumn({
   return (
     <div className="flex flex-col items-center gap-4 flex-1 h-full">
       <div className="text-center">
-        <span className="text-4xl font-extrabold text-gray-900 dark:text-white tabular-nums">{count}</span>
-        <span className="text-lg font-normal text-gray-400 dark:text-gray-500 ml-2">({pct}%)</span>
+        <span className="text-5xl font-extrabold text-gray-900 dark:text-white tabular-nums">{count}</span>
+        <span className="text-xl font-normal text-gray-400 dark:text-gray-500 ml-2">({pct}%)</span>
       </div>
       <div className="w-full flex-1 bg-gray-100 dark:bg-[#2a2a2a] rounded-2xl flex items-end overflow-hidden">
         <div
@@ -32,7 +32,7 @@ function ResultColumn({
           style={{ height: `${pct}%`, minHeight: count > 0 ? '8px' : '0', filter: 'var(--bar-filter, none)' }}
         />
       </div>
-      <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">{label}</span>
+      <span className="text-3xl font-bold text-gray-800 dark:text-gray-100">{label}</span>
     </div>
   );
 }
@@ -110,8 +110,8 @@ export function ScreenPage() {
 
         {/* Question — anchored to top */}
         <div className="space-y-4 pt-4">
-          <p className="text-sm font-semibold uppercase tracking-widest text-violet-500">
-            Питання {activeIdx + 1} з {total}
+          <p className="text-xl font-semibold uppercase tracking-widest text-violet-500">
+            Питання {activeIdx + 1}
           </p>
           <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
             {activeQ?.text}
@@ -163,30 +163,26 @@ export function ScreenPage() {
 
       {/* Right: QR panel — only rendered when charts are visible */}
       {session.resultsVisible && (
-        <aside className="w-96 bg-gray-50 dark:bg-[#1c1c1c] border-l border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center px-8 py-10 space-y-6 flex-shrink-0">
-          <p className="text-base font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+        <aside className="w-96 bg-gray-50 dark:bg-[#1c1c1c] border-l border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center px-5 py-8 space-y-5 flex-shrink-0">
+          <p className="text-lg font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
             Відскануй для участі
           </p>
 
-          <div className="bg-white dark:bg-[#1c1c1c] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-[#2a2a2a]">
+          <div className="bg-white dark:bg-[#1c1c1c] rounded-2xl p-3 shadow-sm border border-gray-100 dark:border-[#2a2a2a]">
             <QRCode
               value={joinUrl}
-              size={260}
+              size={290}
               fgColor={isDark ? '#ffffff' : '#1e1b4b'}
               bgColor={isDark ? '#1c1c1c' : '#ffffff'}
             />
           </div>
 
-          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium text-center">
-            {window.location.host}/join/{code}
-          </p>
-
           <div className="w-full h-px bg-gray-200 dark:bg-gray-700" />
 
           <div className="text-center">
-            <p className="text-5xl font-extrabold text-gray-900 dark:text-white">{results.totalVotes}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              голос{results.totalVotes === 1 ? '' : results.totalVotes < 5 ? 'и' : 'ів'}
+            <p className="text-6xl font-extrabold text-gray-900 dark:text-white">{results.totalVotes}</p>
+            <p className="text-base text-gray-500 dark:text-gray-400 mt-2">
+              всього голос{results.totalVotes === 1 ? '' : results.totalVotes < 5 ? 'и' : 'ів'}
             </p>
           </div>
         </aside>
