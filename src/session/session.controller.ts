@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { SessionGateway } from './session.gateway';
-import { VotePayload, RevotePayload, SetQuestionPayload } from '../../shared/types';
+import { VotePayload, RevotePayload, SetQuestionPayload, SetThemePayload } from '../../shared/types';
 
 @Controller('session')
 export class SessionController {
@@ -55,6 +55,15 @@ export class SessionController {
     const session = this.sessionService.setActiveQuestion(code, body.questionId);
     const results = this.sessionService.getResults(code);
     this.sessionGateway.broadcastQuestionChanged(code, session, results);
+    return session;
+  }
+
+  /** POST /api/session/:code/theme — presenter switches light/dark theme */
+  @Post(':code/theme')
+  @HttpCode(HttpStatus.OK)
+  public setTheme(@Param('code') code: string, @Body() body: SetThemePayload) {
+    const session = this.sessionService.setTheme(code, body.theme);
+    this.sessionGateway.broadcastThemeChanged(code, session);
     return session;
   }
 

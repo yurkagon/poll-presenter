@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { joinSession, onQuestionChanged, onSessionReset } from '@/lib/socket';
+import { useSessionTheme } from '@/lib/useSessionTheme';
 import { CheckCircle2 } from 'lucide-react';
 import type { Session, SessionResults } from '@shared/types';
 
@@ -42,8 +43,8 @@ function OptionButton({
         selected
           ? `${colorClass} text-white border-transparent shadow-lg scale-[1.02]`
           : disabled
-          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-          : `bg-white text-gray-900 border-gray-200 hover:shadow-md hover:-translate-y-0.5 active:scale-95`,
+          ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 border-gray-200 dark:border-gray-700 cursor-not-allowed'
+          : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:shadow-md hover:-translate-y-0.5 active:scale-95',
       ].join(' ')}
     >
       {label}
@@ -62,6 +63,8 @@ export function ParticipantPage() {
   const [hasVoted, setHasVoted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useSessionTheme(session);
 
   /** Sync vote state from localStorage for the given question */
   function syncVoteState(s: Session) {
@@ -156,7 +159,7 @@ export function ParticipantPage() {
   }
 
   if (error) return (
-    <div className="min-h-screen flex items-center justify-center p-6 text-center">
+    <div className="min-h-screen flex items-center justify-center p-6 text-center dark:bg-gray-950">
       <div className="space-y-2">
         <p className="text-red-500 font-semibold">{error}</p>
         <p className="text-gray-400 text-sm">Перевір код сесії та спробуй ще раз</p>
@@ -175,14 +178,14 @@ export function ParticipantPage() {
   const formattedCode = code ? `${code.slice(0, 4)} ${code.slice(4)}` : '';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-950 dark:to-gray-900 flex flex-col transition-colors duration-300">
 
       {/* Header */}
       <header className="px-6 pt-8 pb-4 text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">
+        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">
           Код сесії
         </p>
-        <p className="font-mono font-bold text-xl text-gray-700">{formattedCode}</p>
+        <p className="font-mono font-bold text-xl text-gray-700 dark:text-gray-200">{formattedCode}</p>
       </header>
 
       {/* Main */}
@@ -195,23 +198,27 @@ export function ParticipantPage() {
               key={q.id}
               className={[
                 'h-1 flex-1 rounded-full transition-all',
-                i === activeIdx ? 'bg-violet-500' : i < activeIdx ? 'bg-violet-200' : 'bg-gray-200',
+                i === activeIdx
+                  ? 'bg-violet-500'
+                  : i < activeIdx
+                  ? 'bg-violet-200 dark:bg-violet-900'
+                  : 'bg-gray-200 dark:bg-gray-700',
               ].join(' ')}
             />
           ))}
         </div>
-        <p className="text-xs text-gray-400 -mt-6 self-start">
+        <p className="text-xs text-gray-400 dark:text-gray-500 -mt-6 self-start">
           Питання {activeIdx + 1} з {session.questions.length}
         </p>
 
         {/* Question */}
-        <h1 className="text-2xl font-extrabold text-gray-900 leading-snug text-center">
+        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-snug text-center">
           {activeQ?.text}
         </h1>
 
         {/* Already voted banner */}
         {hasVoted && (
-          <div className="w-full flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl px-5 py-4">
+          <div className="w-full flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 rounded-2xl px-5 py-4">
             <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
             <span className="font-semibold text-sm">Ви вже відповіли на це питання</span>
           </div>
@@ -219,7 +226,7 @@ export function ParticipantPage() {
 
         {/* Option buttons */}
         <div className="w-full space-y-4">
-          {activeQ.options.map((opt, i) => (
+          {activeQ!.options.map((opt, i) => (
             <OptionButton
               key={opt.id}
               label={opt.label}
@@ -232,15 +239,15 @@ export function ParticipantPage() {
         </div>
 
         {!hasVoted && (
-          <p className="text-xs text-gray-400 text-center">Натисни варіант відповіді вище</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 text-center">Натисни варіант відповіді вище</p>
         )}
         {hasVoted && (
-          <p className="text-xs text-gray-400 text-center">Натисни інший варіант, щоб змінити відповідь</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 text-center">Натисни інший варіант, щоб змінити відповідь</p>
         )}
       </main>
 
       <footer className="pb-8 text-center">
-        <p className="text-xs text-gray-300 font-semibold tracking-widest uppercase">Poll Presenter</p>
+        <p className="text-xs text-gray-300 dark:text-gray-700 font-semibold tracking-widest uppercase">Poll Presenter</p>
       </footer>
     </div>
   );

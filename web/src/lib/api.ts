@@ -4,6 +4,7 @@ import type {
   VotePayload,
   RevotePayload,
   SetQuestionPayload,
+  SetThemePayload,
 } from '@shared/types';
 
 const BASE = '/api';
@@ -41,6 +42,12 @@ export const api = {
 
   revote: (code: string, payload: RevotePayload) =>
     request<SessionResults>(`/session/${code}/revote`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  setTheme: (code: string, payload: SetThemePayload) =>
+    request<Session>(`/session/${code}/theme`, {
       method: 'POST',
       body: JSON.stringify(payload),
     }),

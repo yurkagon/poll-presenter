@@ -11,11 +11,14 @@ export interface SessionQuestion {
   options: SessionOption[];  // per-question options
 }
 
+export type Theme = 'light' | 'dark';
+
 export interface Session {
   code: string;
   questions: SessionQuestion[];
   activeQuestionId: string;
   subSession: string;
+  theme: Theme;
 }
 
 // ─── Results ─────────────────────────────────────────────────────────────────
@@ -44,6 +47,10 @@ export interface RevotePayload {
   toOptionId: string;
 }
 
+export interface SetThemePayload {
+  theme: Theme;
+}
+
 export interface SetQuestionPayload {
   questionId: string;
 }
@@ -55,4 +62,5 @@ export const WS_EVENTS = {
   RESULTS_UPDATED: 'results_updated',
   QUESTION_CHANGED: 'question_changed',
   SESSION_RESET: 'session_reset',
+  THEME_CHANGED: 'theme_changed',
 } as const;

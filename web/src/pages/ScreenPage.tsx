@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { api } from '@/lib/api';
 import { joinSession, onResultsUpdated, onQuestionChanged, onSessionReset } from '@/lib/socket';
+import { useSessionTheme } from '@/lib/useSessionTheme';
 import type { Session, SessionResults } from '@shared/types';
 
 // ─── Bar chart row ────────────────────────────────────────────────────────────
@@ -22,13 +23,13 @@ function ResultBar({
   return (
     <div className="space-y-4">
       <div className="flex items-baseline justify-between">
-        <span className="text-4xl font-bold text-gray-800">{label}</span>
-        <span className="text-6xl font-extrabold text-gray-900 tabular-nums">
+        <span className="text-4xl font-bold text-gray-800 dark:text-gray-100">{label}</span>
+        <span className="text-6xl font-extrabold text-gray-900 dark:text-white tabular-nums">
           {count}
-          <span className="text-2xl font-normal text-gray-400 ml-3">({pct}%)</span>
+          <span className="text-2xl font-normal text-gray-400 dark:text-gray-500 ml-3">({pct}%)</span>
         </span>
       </div>
-      <div className="h-16 w-full rounded-full bg-gray-100 overflow-hidden">
+      <div className="h-16 w-full rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ease-out ${color}`}
           style={{ width: `${pct}%`, minWidth: count > 0 ? '4rem' : '0' }}
@@ -48,7 +49,10 @@ export function ScreenPage() {
   const [results, setResults] = useState<SessionResults | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  useSessionTheme(session);
+
   const joinUrl = `${window.location.origin}/join/${code}`;
+  const isDark = session?.theme === 'dark';
 
   const loadData = useCallback(async () => {
     if (!code) return;
@@ -96,7 +100,7 @@ export function ScreenPage() {
   const total = session.questions.length;
 
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="min-h-screen bg-white dark:bg-gray-950 flex transition-colors duration-300">
 
       {/* Left: question + results */}
       <div className="flex-1 flex flex-col justify-center px-16 py-12 space-y-12">
@@ -105,7 +109,7 @@ export function ScreenPage() {
           <p className="text-xl font-semibold uppercase tracking-widest text-violet-500">
             Питання {activeIdx + 1} з {total}
           </p>
-          <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">
+          <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
             {activeQ?.text}
           </h1>
         </div>
@@ -121,7 +125,7 @@ export function ScreenPage() {
             />
           ))}
           {results.totalVotes === 0 && (
-            <p className="text-gray-400 text-2xl">Голосів ще немає</p>
+            <p className="text-gray-400 dark:text-gray-500 text-2xl">Голосів ще немає</p>
           )}
         </div>
 
@@ -132,7 +136,7 @@ export function ScreenPage() {
               key={q.id}
               className={[
                 'h-3 rounded-full transition-all',
-                i === activeIdx ? 'w-12 bg-violet-500' : 'w-3 bg-gray-200',
+                i === activeIdx ? 'w-12 bg-violet-500' : 'w-3 bg-gray-200 dark:bg-gray-700',
               ].join(' ')}
             />
           ))}
@@ -140,24 +144,29 @@ export function ScreenPage() {
       </div>
 
       {/* Right: QR panel */}
-      <aside className="w-96 bg-gray-50 border-l border-gray-100 flex flex-col items-center justify-center px-10 py-12 space-y-10 flex-shrink-0">
-        <p className="text-base font-semibold uppercase tracking-widest text-gray-400">
+      <aside className="w-96 bg-gray-50 dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center px-10 py-12 space-y-10 flex-shrink-0">
+        <p className="text-base font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
           Відскануй для участі
         </p>
 
-        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-          <QRCode value={joinUrl} size={280} fgColor="#1e1b4b" bgColor="#ffffff" />
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+          <QRCode
+            value={joinUrl}
+            size={280}
+            fgColor={isDark ? '#ffffff' : '#1e1b4b'}
+            bgColor={isDark ? '#1f2937' : '#ffffff'}
+          />
         </div>
 
-        <p className="text-base text-gray-500 font-medium text-center">
+        <p className="text-base text-gray-500 dark:text-gray-400 font-medium text-center">
           {window.location.host}/join/{code}
         </p>
 
-        <div className="w-full h-px bg-gray-200" />
+        <div className="w-full h-px bg-gray-200 dark:bg-gray-700" />
 
         <div className="text-center">
-          <p className="text-7xl font-extrabold text-gray-900">{results.totalVotes}</p>
-          <p className="text-lg text-gray-500 mt-2">
+          <p className="text-7xl font-extrabold text-gray-900 dark:text-white">{results.totalVotes}</p>
+          <p className="text-lg text-gray-500 dark:text-gray-400 mt-2">
             голос{results.totalVotes === 1 ? '' : results.totalVotes < 5 ? 'и' : 'ів'}
           </p>
         </div>

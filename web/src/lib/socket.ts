@@ -27,4 +27,9 @@ export function onSessionReset(
   return () => socket.off(WS_EVENTS.SESSION_RESET, cb);
 }
 
+export function onThemeChanged(cb: (payload: { session: Session }) => void) {
+  socket.on(WS_EVENTS.THEME_CHANGED, cb);
+  return () => socket.off(WS_EVENTS.THEME_CHANGED, cb);
+}
+
 export { socket };

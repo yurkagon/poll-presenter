@@ -4,6 +4,7 @@ import {
   SessionResults,
   VoteResult,
   SessionOption,
+  Theme,
 } from '../../shared/types';
 
 // ─── Hardcoded session data ───────────────────────────────────────────────────
@@ -64,6 +65,7 @@ const SESSION_CODE = '88309117';
 export class SessionService {
   private activeQuestionId = QUESTIONS[0].id;
   private subSession = crypto.randomUUID();
+  private theme: Theme = 'light';
 
   /** Votes keyed by `questionId:optionId` */
   private readonly votes = new Map<string, number>();
@@ -83,6 +85,7 @@ export class SessionService {
       questions: QUESTIONS,
       activeQuestionId: this.activeQuestionId,
       subSession: this.subSession,
+      theme: this.theme,
     };
   }
 
@@ -144,6 +147,12 @@ export class SessionService {
     if (!this.findQuestion(questionId)) throw new NotFoundException(`Question "${questionId}" not found`);
 
     this.activeQuestionId = questionId;
+    return this.getSession(code);
+  }
+
+  public setTheme(code: string, theme: Theme): Session {
+    if (code !== SESSION_CODE) throw new NotFoundException(`Session "${code}" not found`);
+    this.theme = theme;
     return this.getSession(code);
   }
 

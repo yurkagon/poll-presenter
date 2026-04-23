@@ -74,6 +74,13 @@ export class SessionGateway
       .emit(WS_EVENTS.QUESTION_CHANGED, { session, results });
   }
 
+  /** Broadcast theme change to all clients */
+  public broadcastThemeChanged(sessionCode: string, session: Session): void {
+    this.server
+      .to(`session:${sessionCode}`)
+      .emit(WS_EVENTS.THEME_CHANGED, { session });
+  }
+
   /** Broadcast session reset to all clients — clears votes and returns to Q1 */
   public broadcastReset(
     sessionCode: string,
