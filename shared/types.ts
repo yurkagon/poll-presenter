@@ -19,6 +19,7 @@ export interface Session {
   activeQuestionId: string;
   subSession: string;
   theme: Theme;
+  resultsVisible: boolean;
 }
 
 // ─── Results ─────────────────────────────────────────────────────────────────
@@ -63,4 +64,5 @@ export const WS_EVENTS = {
   QUESTION_CHANGED: 'question_changed',
   SESSION_RESET: 'session_reset',
   THEME_CHANGED: 'theme_changed',
+  RESULTS_REVEALED: 'results_revealed',
 } as const;

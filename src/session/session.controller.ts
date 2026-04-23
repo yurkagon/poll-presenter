@@ -58,6 +58,15 @@ export class SessionController {
     return session;
   }
 
+  /** POST /api/session/:code/reveal — presenter reveals results for current question */
+  @Post(':code/reveal')
+  @HttpCode(HttpStatus.OK)
+  public revealResults(@Param('code') code: string) {
+    const session = this.sessionService.revealResults(code);
+    this.sessionGateway.broadcastResultsRevealed(code, session);
+    return session;
+  }
+
   /** POST /api/session/:code/theme — presenter switches light/dark theme */
   @Post(':code/theme')
   @HttpCode(HttpStatus.OK)

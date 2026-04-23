@@ -66,6 +66,7 @@ export class SessionService {
   private activeQuestionId = QUESTIONS[0].id;
   private subSession = crypto.randomUUID();
   private theme: Theme = 'light';
+  private resultsVisible = false;
 
   /** Votes keyed by `questionId:optionId` */
   private readonly votes = new Map<string, number>();
@@ -86,6 +87,7 @@ export class SessionService {
       activeQuestionId: this.activeQuestionId,
       subSession: this.subSession,
       theme: this.theme,
+      resultsVisible: this.resultsVisible,
     };
   }
 
@@ -142,11 +144,18 @@ export class SessionService {
     return this.getResults(code);
   }
 
+  public revealResults(code: string): Session {
+    if (code !== SESSION_CODE) throw new NotFoundException(`Session "${code}" not found`);
+    this.resultsVisible = true;
+    return this.getSession(code);
+  }
+
   public setActiveQuestion(code: string, questionId: string): Session {
     if (code !== SESSION_CODE) throw new NotFoundException(`Session "${code}" not found`);
     if (!this.findQuestion(questionId)) throw new NotFoundException(`Question "${questionId}" not found`);
 
     this.activeQuestionId = questionId;
+    this.resultsVisible = false;
     return this.getSession(code);
   }
 
@@ -162,6 +171,7 @@ export class SessionService {
     this.votes.clear();
     this.activeQuestionId = QUESTIONS[0].id;
     this.subSession = crypto.randomUUID();
+    this.resultsVisible = false;
 
     return {
       session: this.getSession(code),

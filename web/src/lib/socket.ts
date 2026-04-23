@@ -32,4 +32,9 @@ export function onThemeChanged(cb: (payload: { session: Session }) => void) {
   return () => socket.off(WS_EVENTS.THEME_CHANGED, cb);
 }
 
+export function onResultsRevealed(cb: (payload: { session: Session }) => void) {
+  socket.on(WS_EVENTS.RESULTS_REVEALED, cb);
+  return () => socket.off(WS_EVENTS.RESULTS_REVEALED, cb);
+}
+
 export { socket };

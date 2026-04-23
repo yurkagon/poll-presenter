@@ -46,6 +46,9 @@ export const api = {
       body: JSON.stringify(payload),
     }),
 
+  revealResults: (code: string) =>
+    request<Session>(`/session/${code}/reveal`, { method: 'POST' }),
+
   setTheme: (code: string, payload: SetThemePayload) =>
     request<Session>(`/session/${code}/theme`, {
       method: 'POST',

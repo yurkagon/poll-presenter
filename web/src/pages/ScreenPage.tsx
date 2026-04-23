@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { api } from '@/lib/api';
-import { joinSession, onResultsUpdated, onQuestionChanged, onSessionReset } from '@/lib/socket';
+import { joinSession, onResultsUpdated, onQuestionChanged, onSessionReset, onResultsRevealed } from '@/lib/socket';
 import { useSessionTheme } from '@/lib/useSessionTheme';
 import type { Session, SessionResults } from '@shared/types';
 
@@ -79,10 +79,15 @@ export function ScreenPage() {
       setResults(r);
     });
 
+    const unsubRevealed = onResultsRevealed(({ session: s }) => {
+      setSession(s);
+    });
+
     return () => {
       unsubResults();
       unsubQuestion();
       unsubReset();
+      unsubRevealed();
     };
   }, [code, loadData]);
 
@@ -103,7 +108,7 @@ export function ScreenPage() {
       {/* Left: question + results */}
       <div className="flex-1 flex flex-col px-16 py-12">
 
-        {/* Question — top */}
+        {/* Question — top, always fixed */}
         <div className="space-y-4">
           <p className="text-sm font-semibold uppercase tracking-widest text-violet-500">
             Питання {activeIdx + 1} з {total}
@@ -113,11 +118,8 @@ export function ScreenPage() {
           </h1>
         </div>
 
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Chart — fixed height, anchored to bottom */}
-        <div className="flex gap-8 h-72">
+        {/* Chart — directly below question, opacity toggle keeps layout stable */}
+        <div className={`flex gap-8 h-72 ${session.resultsVisible ? 'visible' : 'invisible'}`}>
           {results.results.map((r, i) => (
             <ResultColumn
               key={r.optionId}
@@ -129,18 +131,19 @@ export function ScreenPage() {
           ))}
         </div>
 
-        {/* Dot indicators */}
-        <div className="flex gap-3 mt-6">
-          {session.questions.map((q, i) => (
-            <div
-              key={q.id}
-              className={[
-                'h-2 rounded-full transition-all',
-                i === activeIdx ? 'w-8 bg-violet-500' : 'w-2 bg-gray-200 dark:bg-gray-700',
-              ].join(' ')}
-            />
-          ))}
-        </div>
+      </div>
+
+      {/* Dot indicators — fixed bottom left */}
+      <div className="fixed bottom-6 left-16 flex gap-3">
+        {session.questions.map((q, i) => (
+          <div
+            key={q.id}
+            className={[
+              'h-2 rounded-full transition-all',
+              i === activeIdx ? 'w-8 bg-violet-500' : 'w-2 bg-gray-200 dark:bg-gray-700',
+            ].join(' ')}
+          />
+        ))}
       </div>
 
       {/* Right: QR panel */}

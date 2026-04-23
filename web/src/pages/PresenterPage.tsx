@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { ChevronLeft, ChevronRight, RotateCcw, Sun, Moon } from 'lucide-react';
 import { api } from '@/lib/api';
-import { joinSession, onResultsUpdated, onQuestionChanged, onSessionReset } from '@/lib/socket';
+import { joinSession, onResultsUpdated, onQuestionChanged, onSessionReset, onResultsRevealed } from '@/lib/socket';
 import { useSessionTheme, applyTheme } from '@/lib/useSessionTheme';
 import { Button } from '@/components/ui/button';
 import type { Session, SessionResults, Theme } from '@shared/types';
@@ -87,21 +87,40 @@ export function PresenterPage() {
       setResetting(false);
     });
 
+    const unsubRevealed = onResultsRevealed(({ session: s }) => {
+      setSession(s);
+      setSwitching(false);
+    });
+
     return () => {
       unsubResults();
       unsubQuestion();
       unsubReset();
+      unsubRevealed();
     };
   }, [code, loadData]);
 
   async function navigate(dir: 'prev' | 'next') {
     if (!session || !code || switching) return;
     const idx = session.questions.findIndex((q) => q.id === session.activeQuestionId);
-    const nextIdx = dir === 'next' ? idx + 1 : idx - 1;
-    if (nextIdx < 0 || nextIdx >= session.questions.length) return;
     setSwitching(true);
+
     try {
-      await api.setQuestion(code, { questionId: session.questions[nextIdx].id });
+      if (dir === 'next') {
+        if (!session.resultsVisible) {
+          // First "next" — reveal results
+          await api.revealResults(code);
+        } else {
+          // Second "next" — go to next question
+          const nextIdx = idx + 1;
+          if (nextIdx >= session.questions.length) { setSwitching(false); return; }
+          await api.setQuestion(code, { questionId: session.questions[nextIdx].id });
+        }
+      } else {
+        const prevIdx = idx - 1;
+        if (prevIdx < 0) { setSwitching(false); return; }
+        await api.setQuestion(code, { questionId: session.questions[prevIdx].id });
+      }
     } catch {
       setSwitching(false);
     }
@@ -185,32 +204,32 @@ export function PresenterPage() {
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_300px] overflow-hidden">
 
         {/* Left: question + results + nav */}
-        <div className="flex flex-col justify-between px-10 py-10 lg:px-16">
+        <div className="flex flex-col px-10 py-10 lg:px-16">
 
-          <div className="space-y-8 flex-1 flex flex-col justify-center">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-3">
-                Питання {activeIdx + 1} з {total}
-              </p>
-              <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                {activeQ?.text}
-              </h1>
-            </div>
+          {/* Question — anchored to top */}
+          <div className="pt-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-3">
+              Питання {activeIdx + 1} з {total}
+            </p>
+            <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
+              {activeQ?.text}
+            </h1>
+          </div>
 
-            <div className="flex gap-6 max-w-2xl">
-              {results.results.map((r, i) => (
-                <ResultColumn
-                  key={r.optionId}
-                  label={r.label}
-                  count={r.count}
-                  total={results.totalVotes}
-                  color={BAR_COLORS[i % BAR_COLORS.length]}
-                />
-              ))}
-            </div>
-            {results.totalVotes === 0 && (
-              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">Голосів ще немає — покажи QR учасникам</p>
-            )}
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Chart — anchored to bottom, always takes space */}
+          <div className={`flex gap-6 max-w-2xl mb-8 ${session.resultsVisible ? 'visible' : 'invisible'}`}>
+            {results.results.map((r, i) => (
+              <ResultColumn
+                key={r.optionId}
+                label={r.label}
+                count={r.count}
+                total={results.totalVotes}
+                color={BAR_COLORS[i % BAR_COLORS.length]}
+              />
+            ))}
           </div>
 
           {/* Navigation */}
@@ -220,7 +239,7 @@ export function PresenterPage() {
               size="lg"
               onClick={() => navigate('prev')}
               disabled={activeIdx === 0 || switching}
-              className="gap-2"
+              className="gap-2 select-none"
             >
               <ChevronLeft className="w-4 h-4" />
               Попереднє
@@ -237,7 +256,7 @@ export function PresenterPage() {
                     catch { setSwitching(false); }
                   }}
                   className={[
-                    'w-2.5 h-2.5 rounded-full transition-all',
+                    'w-2.5 h-2.5 rounded-full transition-all select-none',
                     i === activeIdx
                       ? 'bg-violet-500 scale-125'
                       : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400',
@@ -247,13 +266,13 @@ export function PresenterPage() {
             </div>
 
             <Button
-              variant={activeIdx === total - 1 ? 'secondary' : 'default'}
+              variant="default"
               size="lg"
               onClick={() => navigate('next')}
-              disabled={activeIdx === total - 1 || switching}
-              className="gap-2"
+              disabled={switching || (session.resultsVisible && activeIdx === total - 1)}
+              className="gap-2 select-none"
             >
-              Наступне
+              {!session.resultsVisible ? 'Показати результати' : 'Наступне'}
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>

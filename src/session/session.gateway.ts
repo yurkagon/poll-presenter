@@ -74,6 +74,13 @@ export class SessionGateway
       .emit(WS_EVENTS.QUESTION_CHANGED, { session, results });
   }
 
+  /** Broadcast results revealed to all clients */
+  public broadcastResultsRevealed(sessionCode: string, session: Session): void {
+    this.server
+      .to(`session:${sessionCode}`)
+      .emit(WS_EVENTS.RESULTS_REVEALED, { session });
+  }
+
   /** Broadcast theme change to all clients */
   public broadcastThemeChanged(sessionCode: string, session: Session): void {
     this.server
