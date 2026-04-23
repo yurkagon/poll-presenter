@@ -6,9 +6,9 @@ import { joinSession, onResultsUpdated, onQuestionChanged, onSessionReset } from
 import { useSessionTheme } from '@/lib/useSessionTheme';
 import type { Session, SessionResults } from '@shared/types';
 
-// ─── Bar chart row ────────────────────────────────────────────────────────────
+// ─── Column chart ─────────────────────────────────────────────────────────────
 
-function ResultBar({
+function ResultColumn({
   label,
   count,
   total,
@@ -21,20 +21,18 @@ function ResultBar({
 }) {
   const pct = total === 0 ? 0 : Math.round((count / total) * 100);
   return (
-    <div className="space-y-2">
-      <div className="flex items-baseline justify-between">
-        <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">{label}</span>
-        <span className="text-4xl font-extrabold text-gray-900 dark:text-white tabular-nums">
-          {count}
-          <span className="text-lg font-normal text-gray-400 dark:text-gray-500 ml-2">({pct}%)</span>
-        </span>
+    <div className="flex flex-col items-center gap-4 flex-1">
+      <div className="text-center">
+        <span className="text-4xl font-extrabold text-gray-900 dark:text-white tabular-nums">{count}</span>
+        <span className="text-lg font-normal text-gray-400 dark:text-gray-500 ml-2">({pct}%)</span>
       </div>
-      <div className="h-12 w-full rounded-full bg-gray-100 dark:bg-[#2a2a2a] overflow-hidden">
+      <div className="w-full h-56 bg-gray-100 dark:bg-[#2a2a2a] rounded-2xl flex items-end overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-700 ease-out ${color}`}
-          style={{ width: `${pct}%`, minWidth: count > 0 ? '4rem' : '0', filter: 'var(--bar-filter, none)' }}
+          className={`w-full rounded-t-2xl transition-all duration-700 ease-out ${color}`}
+          style={{ height: `${pct}%`, minHeight: count > 0 ? '8px' : '0', filter: 'var(--bar-filter, none)' }}
         />
       </div>
+      <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">{label}</span>
     </div>
   );
 }
@@ -114,9 +112,9 @@ export function ScreenPage() {
           </h1>
         </div>
 
-        <div className="space-y-6">
+        <div className="flex gap-8">
           {results.results.map((r, i) => (
-            <ResultBar
+            <ResultColumn
               key={r.optionId}
               label={r.label}
               count={r.count}
@@ -124,10 +122,10 @@ export function ScreenPage() {
               color={BAR_COLORS[i % BAR_COLORS.length]}
             />
           ))}
-          {results.totalVotes === 0 && (
-            <p className="text-gray-400 dark:text-gray-500 text-2xl">Голосів ще немає</p>
-          )}
         </div>
+        {results.totalVotes === 0 && (
+          <p className="text-gray-400 dark:text-gray-500 text-xl mt-2">Голосів ще немає</p>
+        )}
 
         {/* Dot indicators */}
         <div className="flex gap-3">

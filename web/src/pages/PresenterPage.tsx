@@ -8,9 +8,9 @@ import { useSessionTheme, applyTheme } from '@/lib/useSessionTheme';
 import { Button } from '@/components/ui/button';
 import type { Session, SessionResults, Theme } from '@shared/types';
 
-// ─── Bar chart row ────────────────────────────────────────────────────────────
+// ─── Column chart ─────────────────────────────────────────────────────────────
 
-function ResultBar({
+function ResultColumn({
   label,
   count,
   total,
@@ -23,20 +23,18 @@ function ResultBar({
 }) {
   const pct = total === 0 ? 0 : Math.round((count / total) * 100);
   return (
-    <div className="space-y-2">
-      <div className="flex items-baseline justify-between">
-        <span className="text-xl font-bold text-gray-800 dark:text-gray-100">{label}</span>
-        <span className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">
-          {count}
-          <span className="text-base font-normal text-gray-400 dark:text-gray-500 ml-1">({pct}%)</span>
-        </span>
+    <div className="flex flex-col items-center gap-3 flex-1">
+      <div className="text-center">
+        <span className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">{count}</span>
+        <span className="text-sm font-normal text-gray-400 dark:text-gray-500 ml-1">({pct}%)</span>
       </div>
-      <div className="h-10 w-full rounded-full bg-gray-100 dark:bg-[#2a2a2a] overflow-hidden">
+      <div className="w-full h-44 bg-gray-100 dark:bg-[#2a2a2a] rounded-2xl flex items-end overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-700 ease-out ${color}`}
-          style={{ width: `${pct}%`, minWidth: count > 0 ? '2.5rem' : '0', filter: 'var(--bar-filter, none)' }}
+          className={`w-full rounded-t-2xl transition-all duration-700 ease-out ${color}`}
+          style={{ height: `${pct}%`, minHeight: count > 0 ? '8px' : '0', filter: 'var(--bar-filter, none)' }}
         />
       </div>
+      <span className="text-lg font-bold text-gray-800 dark:text-gray-100">{label}</span>
     </div>
   );
 }
@@ -199,9 +197,9 @@ export function PresenterPage() {
               </h1>
             </div>
 
-            <div className="space-y-6 max-w-2xl">
+            <div className="flex gap-6 max-w-2xl">
               {results.results.map((r, i) => (
-                <ResultBar
+                <ResultColumn
                   key={r.optionId}
                   label={r.label}
                   count={r.count}
@@ -209,10 +207,10 @@ export function PresenterPage() {
                   color={BAR_COLORS[i % BAR_COLORS.length]}
                 />
               ))}
-              {results.totalVotes === 0 && (
-                <p className="text-gray-400 dark:text-gray-500 text-sm">Голосів ще немає — покажи QR учасникам</p>
-              )}
             </div>
+            {results.totalVotes === 0 && (
+              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">Голосів ще немає — покажи QR учасникам</p>
+            )}
           </div>
 
           {/* Navigation */}
