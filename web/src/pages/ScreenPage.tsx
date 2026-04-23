@@ -103,7 +103,7 @@ export function ScreenPage() {
   const total = session.questions.length;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#141414] flex transition-colors duration-300">
+    <div className="h-screen overflow-hidden bg-white dark:bg-[#141414] flex transition-colors duration-300">
 
       {/* Left: question + results */}
       <div className="flex-1 flex flex-col px-16 py-12">
@@ -128,7 +128,8 @@ export function ScreenPage() {
             <img
               src={activeQ.image}
               alt=""
-              className={`absolute inset-0 w-full h-full object-contain rounded-2xl transition-opacity duration-500 ${session.resultsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+              className={`absolute inset-0 w-full h-full object-contain rounded-2xl ${session.resultsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+              style={{ transition: session.resultsVisible ? 'opacity 0ms' : 'opacity 500ms' }}
             />
           )}
           {/* Chart — appears when results revealed */}
@@ -163,7 +164,7 @@ export function ScreenPage() {
       {/* Right: QR panel — only rendered when charts are visible */}
       {session.resultsVisible && (
         <aside className="w-96 bg-gray-50 dark:bg-[#1c1c1c] border-l border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center px-8 py-10 space-y-6 flex-shrink-0">
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+          <p className="text-base font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
             Відскануй для участі
           </p>
 
