@@ -108,7 +108,7 @@ export function ScreenPage() {
           <p className="text-sm font-semibold uppercase tracking-widest text-violet-500">
             Питання {activeIdx + 1} з {total}
           </p>
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
+          <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
             {activeQ?.text}
           </h1>
         </div>
