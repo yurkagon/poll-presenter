@@ -20,18 +20,18 @@ function ResultBar({
 }) {
   const pct = total === 0 ? 0 : Math.round((count / total) * 100);
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex items-baseline justify-between">
-        <span className="text-2xl font-bold text-gray-800">{label}</span>
-        <span className="text-4xl font-extrabold text-gray-900 tabular-nums">
+        <span className="text-4xl font-bold text-gray-800">{label}</span>
+        <span className="text-6xl font-extrabold text-gray-900 tabular-nums">
           {count}
-          <span className="text-lg font-normal text-gray-400 ml-2">({pct}%)</span>
+          <span className="text-2xl font-normal text-gray-400 ml-3">({pct}%)</span>
         </span>
       </div>
-      <div className="h-12 w-full rounded-full bg-gray-100 overflow-hidden">
+      <div className="h-16 w-full rounded-full bg-gray-100 overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ease-out ${color}`}
-          style={{ width: `${pct}%`, minWidth: count > 0 ? '3rem' : '0' }}
+          style={{ width: `${pct}%`, minWidth: count > 0 ? '4rem' : '0' }}
         />
       </div>
     </div>
@@ -85,10 +85,10 @@ export function ScreenPage() {
   }, [code, loadData]);
 
   if (error) return (
-    <div className="min-h-screen flex items-center justify-center text-red-500 font-semibold">{error}</div>
+    <div className="min-h-screen flex items-center justify-center text-red-500 text-3xl font-semibold">{error}</div>
   );
   if (!session || !results) return (
-    <div className="min-h-screen flex items-center justify-center text-gray-400 text-lg">Завантаження...</div>
+    <div className="min-h-screen flex items-center justify-center text-gray-400 text-3xl">Завантаження...</div>
   );
 
   const activeQ = session.questions.find((q) => q.id === session.activeQuestionId);
@@ -96,78 +96,72 @@ export function ScreenPage() {
   const total = session.questions.length;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex">
 
-      {/* Main */}
-      <main className="flex-1 grid grid-cols-[1fr_320px]">
+      {/* Left: question + results */}
+      <div className="flex-1 flex flex-col justify-center px-16 py-12 space-y-12">
 
-        {/* Left: question + results */}
-        <div className="flex flex-col justify-center px-16 py-12 space-y-10">
-
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-widest text-violet-500 mb-4">
-              Питання {activeIdx + 1} з {total}
-            </p>
-            <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
-              {activeQ?.text}
-            </h1>
-          </div>
-
-          <div className="space-y-7 max-w-2xl">
-            {results.results.map((r, i) => (
-              <ResultBar
-                key={r.optionId}
-                label={r.label}
-                count={r.count}
-                total={results.totalVotes}
-                color={BAR_COLORS[i % BAR_COLORS.length]}
-              />
-            ))}
-            {results.totalVotes === 0 && (
-              <p className="text-gray-400 text-lg">Голосів ще немає</p>
-            )}
-          </div>
-
-          {/* Dot indicators */}
-          <div className="flex gap-2">
-            {session.questions.map((q, i) => (
-              <div
-                key={q.id}
-                className={[
-                  'h-2 rounded-full transition-all',
-                  i === activeIdx ? 'w-8 bg-violet-500' : 'w-2 bg-gray-200',
-                ].join(' ')}
-              />
-            ))}
-          </div>
+        <div className="space-y-6">
+          <p className="text-xl font-semibold uppercase tracking-widest text-violet-500">
+            Питання {activeIdx + 1} з {total}
+          </p>
+          <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">
+            {activeQ?.text}
+          </h1>
         </div>
 
-        {/* Right: QR panel */}
-        <aside className="bg-gray-50 border-l border-gray-100 flex flex-col items-center justify-center px-10 py-12 space-y-8">
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-            Відскануй для участі
+        <div className="space-y-10">
+          {results.results.map((r, i) => (
+            <ResultBar
+              key={r.optionId}
+              label={r.label}
+              count={r.count}
+              total={results.totalVotes}
+              color={BAR_COLORS[i % BAR_COLORS.length]}
+            />
+          ))}
+          {results.totalVotes === 0 && (
+            <p className="text-gray-400 text-2xl">Голосів ще немає</p>
+          )}
+        </div>
+
+        {/* Dot indicators */}
+        <div className="flex gap-3">
+          {session.questions.map((q, i) => (
+            <div
+              key={q.id}
+              className={[
+                'h-3 rounded-full transition-all',
+                i === activeIdx ? 'w-12 bg-violet-500' : 'w-3 bg-gray-200',
+              ].join(' ')}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Right: QR panel */}
+      <aside className="w-96 bg-gray-50 border-l border-gray-100 flex flex-col items-center justify-center px-10 py-12 space-y-10 flex-shrink-0">
+        <p className="text-base font-semibold uppercase tracking-widest text-gray-400">
+          Відскануй для участі
+        </p>
+
+        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+          <QRCode value={joinUrl} size={280} fgColor="#1e1b4b" bgColor="#ffffff" />
+        </div>
+
+        <p className="text-base text-gray-500 font-medium text-center">
+          {window.location.host}/join/{code}
+        </p>
+
+        <div className="w-full h-px bg-gray-200" />
+
+        <div className="text-center">
+          <p className="text-7xl font-extrabold text-gray-900">{results.totalVotes}</p>
+          <p className="text-lg text-gray-500 mt-2">
+            голос{results.totalVotes === 1 ? '' : results.totalVotes < 5 ? 'и' : 'ів'}
           </p>
-
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <QRCode value={joinUrl} size={200} fgColor="#1e1b4b" bgColor="#ffffff" />
-          </div>
-
-          <div className="text-center space-y-1">
-            <p className="text-sm text-gray-500 font-medium">
-              {window.location.host}/join/{code}
-            </p>
-          </div>
-
-          <div className="w-full h-px bg-gray-200" />
-
-          <div className="text-center">
-            <p className="text-5xl font-extrabold text-gray-900">{results.totalVotes}</p>
-            <p className="text-sm text-gray-500 mt-2">
-              голос{results.totalVotes === 1 ? '' : results.totalVotes < 5 ? 'и' : 'ів'}
-            </p>
-          </div>
-        </aside>
-      </main>
+        </div>
+      </aside>
     </div>
   );
 }
