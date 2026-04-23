@@ -108,8 +108,8 @@ export function ScreenPage() {
       {/* Left: question + results */}
       <div className="flex-1 flex flex-col px-16 py-12">
 
-        {/* Question — top, always fixed */}
-        <div className="space-y-4">
+        {/* Question — anchored to top */}
+        <div className="space-y-4 pt-4">
           <p className="text-sm font-semibold uppercase tracking-widest text-violet-500">
             Питання {activeIdx + 1} з {total}
           </p>
@@ -118,8 +118,11 @@ export function ScreenPage() {
           </h1>
         </div>
 
-        {/* Chart — directly below question, opacity toggle keeps layout stable */}
-        <div className={`flex gap-8 h-72 ${session.resultsVisible ? 'visible' : 'invisible'}`}>
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Chart — anchored to bottom, always takes space */}
+        <div className={`flex gap-8 h-72 mb-12 ${session.resultsVisible ? 'visible' : 'invisible'}`}>
           {results.results.map((r, i) => (
             <ResultColumn
               key={r.optionId}
