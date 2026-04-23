@@ -19,41 +19,49 @@ const QUESTIONS = [
     id: 'q1',
     text: 'Чи "норм" використовувати АІ для підготовки проповіді/домашньої групи, тощо',
     options: DEFAULT_OPTIONS,
+    image: '/images/q1.webp',
   },
   {
     id: 'q2',
     text: 'Чи "норм" християнину вступати в суперечки в коментарях, захищаючи віру?',
     options: DEFAULT_OPTIONS,
+    image: '/images/q2.webp',
   },
   {
     id: 'q3',
     text: '"Кар\'єризм" у церкві - чи окей бажати збільшувати свою роль у служінні?',
     options: DEFAULT_OPTIONS,
+    image: '/images/q3.webp',
   },
   {
     id: 'q4',
     text: 'Чи окей служителю одягати дорогий одяг за тисячі долларів на служіння?',
     options: DEFAULT_OPTIONS,
+    image: '/images/q4.webp',
   },
   {
     id: 'q5',
     text: 'Cancel culture - Чи «норм» християнам масово відписуватися і бойкотувати бренд або блогера через один вчинок?',
     options: DEFAULT_OPTIONS,
+    image: '/images/q5.webp',
   },
   {
     id: 'q6',
     text: 'Work-life balance в церкві - Чи «норм» бути недоступним для членів церкви/команди у якісь дні тижня чи не відповідати після якоїсь години вечора?',
     options: DEFAULT_OPTIONS,
+    image: '/images/q6.webp',
   },
   {
     id: 'q7',
     text: 'Пропустити свято в церкві бо "треба святкувати зі своїми родичами (не церковними)"',
     options: DEFAULT_OPTIONS,
+    image: '/images/q7.webp',
   },
   {
     id: 'q8',
     text: 'Християнський Tinder: Чи "норм" шукати пару в дейтинг-додатках?',
     options: DEFAULT_OPTIONS,
+    image: '/images/q8.webp',
   },
 ];
 
@@ -65,7 +73,7 @@ const SESSION_CODE = '88309117';
 export class SessionService {
   private activeQuestionId = QUESTIONS[0].id;
   private subSession = crypto.randomUUID();
-  private theme: Theme = 'light';
+  private theme: Theme = 'dark';
   private resultsVisible = false;
 
   /** Votes keyed by `questionId:optionId` */

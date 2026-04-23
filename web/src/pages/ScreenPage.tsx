@@ -121,17 +121,28 @@ export function ScreenPage() {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Chart — anchored to bottom, always takes space */}
-        <div className={`flex gap-8 h-72 mb-12 ${session.resultsVisible ? 'visible' : 'invisible'}`}>
-          {results.results.map((r, i) => (
-            <ResultColumn
-              key={r.optionId}
-              label={r.label}
-              count={r.count}
-              total={results.totalVotes}
-              color={BAR_COLORS[i % BAR_COLORS.length]}
+        {/* Image / Chart — same fixed-height block, anchored to bottom */}
+        <div className="h-72 mb-12 relative">
+          {/* Image — visible until results revealed */}
+          {activeQ?.image && (
+            <img
+              src={activeQ.image}
+              alt=""
+              className={`absolute inset-0 w-full h-full object-contain rounded-2xl transition-opacity duration-500 ${session.resultsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
             />
-          ))}
+          )}
+          {/* Chart — appears when results revealed */}
+          <div className={`absolute inset-0 flex gap-8 transition-opacity duration-500 ${session.resultsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            {results.results.map((r, i) => (
+              <ResultColumn
+                key={r.optionId}
+                label={r.label}
+                count={r.count}
+                total={results.totalVotes}
+                color={BAR_COLORS[i % BAR_COLORS.length]}
+              />
+            ))}
+          </div>
         </div>
 
       </div>

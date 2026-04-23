@@ -9,6 +9,7 @@ export interface SessionQuestion {
   id: string;
   text: string;
   options: SessionOption[];  // per-question options
+  image?: string;            // optional image URL
 }
 
 export type Theme = 'light' | 'dark';
