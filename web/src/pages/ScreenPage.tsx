@@ -21,12 +21,12 @@ function ResultColumn({
 }) {
   const pct = total === 0 ? 0 : Math.round((count / total) * 100);
   return (
-    <div className="flex flex-col items-center gap-4 flex-1">
+    <div className="flex flex-col items-center gap-4 flex-1 h-full">
       <div className="text-center">
         <span className="text-4xl font-extrabold text-gray-900 dark:text-white tabular-nums">{count}</span>
         <span className="text-lg font-normal text-gray-400 dark:text-gray-500 ml-2">({pct}%)</span>
       </div>
-      <div className="w-full h-56 bg-gray-100 dark:bg-[#2a2a2a] rounded-2xl flex items-end overflow-hidden">
+      <div className="w-full flex-1 bg-gray-100 dark:bg-[#2a2a2a] rounded-2xl flex items-end overflow-hidden">
         <div
           className={`w-full rounded-t-2xl transition-all duration-700 ease-out ${color}`}
           style={{ height: `${pct}%`, minHeight: count > 0 ? '8px' : '0', filter: 'var(--bar-filter, none)' }}
@@ -101,9 +101,10 @@ export function ScreenPage() {
     <div className="min-h-screen bg-white dark:bg-[#141414] flex transition-colors duration-300">
 
       {/* Left: question + results */}
-      <div className="flex-1 flex flex-col justify-center px-16 py-12 space-y-12">
+      <div className="flex-1 flex flex-col px-16 py-12">
 
-        <div className="space-y-6">
+        {/* Question — top */}
+        <div className="space-y-4">
           <p className="text-sm font-semibold uppercase tracking-widest text-violet-500">
             Питання {activeIdx + 1} з {total}
           </p>
@@ -112,7 +113,11 @@ export function ScreenPage() {
           </h1>
         </div>
 
-        <div className="flex gap-8">
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Chart — fixed height, anchored to bottom */}
+        <div className="flex gap-8 h-72">
           {results.results.map((r, i) => (
             <ResultColumn
               key={r.optionId}
@@ -123,12 +128,9 @@ export function ScreenPage() {
             />
           ))}
         </div>
-        {results.totalVotes === 0 && (
-          <p className="text-gray-400 dark:text-gray-500 text-xl mt-2">Голосів ще немає</p>
-        )}
 
         {/* Dot indicators */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-6">
           {session.questions.map((q, i) => (
             <div
               key={q.id}
