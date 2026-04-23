@@ -220,7 +220,7 @@ export function PresenterPage() {
           <div className="flex-1" />
 
           {/* Image / Chart — same fixed-height block, anchored to bottom */}
-          <div className="max-w-2xl mb-8 h-64 relative">
+          <div className="max-w-2xl mb-8 h-80 relative">
             {/* Image — visible until results revealed */}
             {activeQ?.image && (
               <img

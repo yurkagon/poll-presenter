@@ -122,7 +122,7 @@ export function ScreenPage() {
         <div className="flex-1" />
 
         {/* Image / Chart — same fixed-height block, anchored to bottom */}
-        <div className="h-72 mb-12 relative">
+        <div className="h-96 mb-12 relative">
           {/* Image — visible until results revealed */}
           {activeQ?.image && (
             <img
@@ -160,34 +160,36 @@ export function ScreenPage() {
         ))}
       </div>
 
-      {/* Right: QR panel */}
-      <aside className="w-96 bg-gray-50 dark:bg-[#1c1c1c] border-l border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center px-8 py-10 space-y-6 flex-shrink-0">
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-          Відскануй для участі
-        </p>
-
-        <div className="bg-white dark:bg-[#1c1c1c] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-[#2a2a2a]">
-          <QRCode
-            value={joinUrl}
-            size={260}
-            fgColor={isDark ? '#ffffff' : '#1e1b4b'}
-            bgColor={isDark ? '#1c1c1c' : '#ffffff'}
-          />
-        </div>
-
-        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium text-center">
-          {window.location.host}/join/{code}
-        </p>
-
-        <div className="w-full h-px bg-gray-200 dark:bg-gray-700" />
-
-        <div className="text-center">
-          <p className="text-5xl font-extrabold text-gray-900 dark:text-white">{results.totalVotes}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            голос{results.totalVotes === 1 ? '' : results.totalVotes < 5 ? 'и' : 'ів'}
+      {/* Right: QR panel — only rendered when charts are visible */}
+      {session.resultsVisible && (
+        <aside className="w-96 bg-gray-50 dark:bg-[#1c1c1c] border-l border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center px-8 py-10 space-y-6 flex-shrink-0">
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+            Відскануй для участі
           </p>
-        </div>
-      </aside>
+
+          <div className="bg-white dark:bg-[#1c1c1c] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-[#2a2a2a]">
+            <QRCode
+              value={joinUrl}
+              size={260}
+              fgColor={isDark ? '#ffffff' : '#1e1b4b'}
+              bgColor={isDark ? '#1c1c1c' : '#ffffff'}
+            />
+          </div>
+
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium text-center">
+            {window.location.host}/join/{code}
+          </p>
+
+          <div className="w-full h-px bg-gray-200 dark:bg-gray-700" />
+
+          <div className="text-center">
+            <p className="text-5xl font-extrabold text-gray-900 dark:text-white">{results.totalVotes}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              голос{results.totalVotes === 1 ? '' : results.totalVotes < 5 ? 'и' : 'ів'}
+            </p>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }
