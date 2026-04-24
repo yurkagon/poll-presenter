@@ -43,7 +43,7 @@ function ResultColumn({
 
 const BAR_COLORS = ['bg-violet-500', 'bg-rose-400'];
 
-const PRESENTER_PASSWORD = 'asdas23423sdfsd';
+const PRESENTER_PASSWORD = 'potuzhno2026';
 
 export function PresenterPage() {
   const { code } = useParams<{ code: string }>();
