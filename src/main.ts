@@ -19,6 +19,10 @@ async function bootstrap() {
   app.enableCors({ origin: corsOrigins, credentials: true });
   app.setGlobalPrefix('api');
 
+  // Serve session images from src/session/images/ at /images/*
+  const imagesPath = join(process.cwd(), 'src', 'session', 'images');
+  app.useStaticAssets(imagesPath, { prefix: '/images' });
+
   // __dirname at runtime = dist/src → project root is ../..
   const buildPath = join(__dirname, '..', '..', 'build');
   const indexHtml = join(buildPath, 'index.html');
@@ -29,7 +33,11 @@ async function bootstrap() {
 
     const expressApp = app.getHttpAdapter().getInstance();
     expressApp.use((req: Request, res: Response, next: NextFunction) => {
-      if (req.path.startsWith('/api') || req.path.startsWith('/socket.io')) {
+      if (
+        req.path.startsWith('/api') ||
+        req.path.startsWith('/socket.io') ||
+        req.path.startsWith('/images')
+      ) {
         return next();
       }
       res.sendFile(indexHtml);
