@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, useSearchParams, Navigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import { ChevronLeft, ChevronRight, RotateCcw, Sun, Moon } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -43,15 +43,8 @@ function ResultColumn({
 
 const BAR_COLORS = ['bg-violet-500', 'bg-rose-400'];
 
-const PRESENTER_PASSWORD = 'potuzhno2026';
-
 export function PresenterPage() {
   const { code } = useParams<{ code: string }>();
-  const [searchParams] = useSearchParams();
-
-  if (searchParams.get('hardPassword') !== PRESENTER_PASSWORD) {
-    return <Navigate to="/" replace />;
-  }
   const [session, setSession] = useState<Session | null>(null);
   const [results, setResults] = useState<SessionResults | null>(null);
   const [error, setError] = useState<string | null>(null);
