@@ -23,18 +23,18 @@ function ResultColumn({
 }) {
   const pct = total === 0 ? 0 : Math.round((count / total) * 100);
   return (
-    <div className="flex flex-col items-center gap-3 flex-1">
+    <div className="flex flex-col items-center gap-4 flex-1 h-full">
       <div className="text-center">
-        <span className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">{count}</span>
-        <span className="text-sm font-normal text-gray-400 dark:text-gray-500 ml-1">({pct}%)</span>
+        <span className="text-5xl font-extrabold text-gray-900 dark:text-white tabular-nums">{count}</span>
+        <span className="text-xl font-normal text-gray-400 dark:text-gray-500 ml-2">({pct}%)</span>
       </div>
-      <div className="w-full h-44 bg-gray-100 dark:bg-[#2a2a2a] rounded-2xl flex items-end overflow-hidden">
+      <div className="w-full flex-1 bg-gray-100 dark:bg-[#2a2a2a] rounded-2xl flex items-end overflow-hidden">
         <div
           className={`w-full rounded-t-2xl transition-all duration-700 ease-out ${color}`}
           style={{ height: `${pct}%`, minHeight: count > 0 ? '8px' : '0', filter: 'var(--bar-filter, none)' }}
         />
       </div>
-      <span className="text-lg font-bold text-gray-800 dark:text-gray-100">{label}</span>
+      <span className="text-3xl font-bold text-gray-800 dark:text-gray-100">{label}</span>
     </div>
   );
 }
@@ -165,24 +165,22 @@ export function PresenterPage() {
   const total = session.questions.length;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#141414] flex flex-col transition-colors duration-300">
+    <div className="h-screen overflow-hidden bg-white dark:bg-[#141414] flex flex-col transition-colors duration-300">
 
-      {/* Header */}
-      <header className="border-b border-gray-100 dark:border-gray-800 px-8 py-4 flex items-center justify-between">
+      {/* Header — controls only, slim */}
+      <header className="border-b border-gray-100 dark:border-gray-800 px-8 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">🗳</span>
-          <span className="font-bold text-gray-900 dark:text-white text-lg">Poll Presenter</span>
+          <span className="text-xl">🗳</span>
+          <span className="font-bold text-gray-900 dark:text-white">Poll Presenter</span>
         </div>
         <div className="flex items-center gap-3">
-          {/* Theme toggle */}
           <button
             onClick={handleThemeToggle}
-            className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title={isDark ? 'Світла тема' : 'Темна тема'}
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-
           <Button
             variant="outline"
             size="sm"
@@ -201,17 +199,17 @@ export function PresenterPage() {
       </header>
 
       {/* Main */}
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_300px] overflow-hidden">
+      <main className="flex-1 flex overflow-hidden">
 
-        {/* Left: question + results + nav */}
-        <div className="flex flex-col px-10 py-10 lg:px-16">
+        {/* Left: question + image/chart + nav */}
+        <div className="flex-1 flex flex-col px-16 py-10">
 
           {/* Question — anchored to top */}
-          <div className="pt-4">
-            <p className="text-sm font-semibold uppercase tracking-widest text-violet-500 mb-3">
+          <div className="space-y-4 pt-2">
+            <p className="text-xl font-semibold uppercase tracking-widest text-violet-500">
               Питання {activeIdx + 1}
             </p>
-            <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
+            <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
               {activeQ?.text}
             </h1>
           </div>
@@ -220,17 +218,16 @@ export function PresenterPage() {
           <div className="flex-1" />
 
           {/* Image / Chart — same fixed-height block, anchored to bottom */}
-          <div className="max-w-2xl mb-8 h-80 relative">
-            {/* Image — visible until results revealed */}
+          <div className="h-96 mb-6 relative">
             {activeQ?.image && (
               <img
                 src={activeQ.image}
                 alt=""
-                className={`absolute inset-0 w-full h-full object-contain rounded-2xl transition-opacity duration-500 ${session.resultsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                className={`absolute inset-0 w-full h-full object-contain rounded-2xl ${session.resultsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                style={{ transition: session.resultsVisible ? 'opacity 0ms' : 'opacity 500ms' }}
               />
             )}
-            {/* Chart — appears when results revealed */}
-            <div className={`absolute inset-0 flex gap-6 transition-opacity duration-500 ${session.resultsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className={`absolute inset-0 flex gap-8 transition-opacity duration-500 ${session.resultsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               {results.results.map((r, i) => (
                 <ResultColumn
                   key={r.optionId}
@@ -244,7 +241,7 @@ export function PresenterPage() {
           </div>
 
           {/* Navigation */}
-          <div className="flex items-center justify-between pt-8 border-t border-gray-100 dark:border-gray-800 mt-8">
+          <div className="flex items-center justify-between pt-5 border-t border-gray-100 dark:border-gray-800">
             <Button
               variant="outline"
               size="lg"
@@ -290,37 +287,25 @@ export function PresenterPage() {
         </div>
 
         {/* Right: QR panel */}
-        <aside className="bg-gray-50 dark:bg-[#1c1c1c] border-l border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center px-8 py-10 space-y-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+        <aside className="w-80 bg-gray-50 dark:bg-[#1c1c1c] border-l border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center px-5 py-8 space-y-5 flex-shrink-0">
+          <p className="text-base font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
             Відскануй для участі
           </p>
 
-          <div className="bg-white dark:bg-[#1c1c1c] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-[#2a2a2a]">
+          <div className="bg-white dark:bg-[#1c1c1c] rounded-2xl p-3 shadow-sm border border-gray-100 dark:border-[#2a2a2a]">
             <QRCode
               value={joinUrl}
-              size={170}
+              size={220}
               fgColor={isDark ? '#ffffff' : '#1e1b4b'}
               bgColor={isDark ? '#1c1c1c' : '#ffffff'}
             />
           </div>
 
-          <div className="text-center space-y-1">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-              Join at{' '}
-              <span className="text-violet-600 dark:text-violet-400 font-semibold">
-                {window.location.host}/join/{code}
-              </span>
-            </p>
-            <p className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-wider font-mono">
-              {formattedCode}
-            </p>
-          </div>
-
           <div className="w-full h-px bg-gray-200 dark:bg-gray-700" />
 
           <div className="text-center">
-            <p className="text-4xl font-extrabold text-gray-900 dark:text-white">{results.totalVotes}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-5xl font-extrabold text-gray-900 dark:text-white">{results.totalVotes}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               всього голос{results.totalVotes === 1 ? '' : results.totalVotes < 5 ? 'и' : 'ів'}
             </p>
           </div>
