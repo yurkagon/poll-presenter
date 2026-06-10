@@ -19,11 +19,8 @@ async function bootstrap() {
   app.enableCors({ origin: corsOrigins, credentials: true });
   app.setGlobalPrefix('api');
 
-  // Serve session images from src/session/images/ at /images/*
-  const imagesPath = join(process.cwd(), 'src', 'session', 'images');
-  app.useStaticAssets(imagesPath, { prefix: '/images' });
+  app.useStaticAssets(join(process.cwd(), 'src', 'session', 'images'), { prefix: '/images' });
 
-  // __dirname at runtime = dist/src → project root is ../..
   const buildPath = join(__dirname, '..', '..', 'build');
   const indexHtml = join(buildPath, 'index.html');
   const hasBuild = existsSync(indexHtml);

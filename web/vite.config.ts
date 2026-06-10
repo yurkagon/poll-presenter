@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// __dirname here is web/ (the directory this config lives in)
 export default defineConfig({
   root: path.resolve(__dirname),
   plugins: [react()],
