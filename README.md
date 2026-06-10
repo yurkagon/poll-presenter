@@ -309,3 +309,7 @@ This is an MVP. The constraints are deliberate:
 - **Hardcoded questions.** No CMS, no admin UI for content. Editing means a code change + redeploy. For a one-event app, this is faster than building a question editor.
 
 If you wanted to grow this beyond MVP — multi-session, persistence, auth, an admin UI — the boundaries are already in place (`SessionService` is the only thing that touches state, `SessionGateway` is the only thing that broadcasts, `shared/types.ts` is the contract). You'd swap the in-memory `Map` for a DB and add a session-creation flow on top, without rewiring the rest.
+
+## License
+
+[MIT](LICENSE) © Yurii Khvishchuk

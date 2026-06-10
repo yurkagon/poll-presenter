@@ -2,6 +2,8 @@
   "name": "poll-presenter",
   "version": "1.0.0",
   "description": "Live polling MVP — presenter + participant views with real-time updates",
+  "license": "MIT",
+  "author": "Yurii Khvishchuk",
   "engines": {
     "node": ">=18.0.0"
   },
