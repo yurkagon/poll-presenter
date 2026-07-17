@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: poll-presenter-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-poll}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-poll}
+      POSTGRES_DB: ${POSTGRES_DB:-poll_presenter}
+      # Keep PGDATA in a subdirectory so the bind-mounted folder itself
+      # can also hold a .gitkeep without confusing Postgres init.
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Bind-mount into the project folder (relative path) so the database
+      # files live next to the code and travel with the project when moved.
+      - ./storage/db/postgress:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-poll} -d ${POSTGRES_DB:-poll_presenter}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
