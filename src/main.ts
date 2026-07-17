@@ -1,11 +1,13 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { Request, Response, NextFunction } from 'express';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -17,6 +19,8 @@ async function bootstrap() {
   const corsOrigins = rawOrigins.split(',').map((o) => o.trim());
 
   app.enableCors({ origin: corsOrigins, credentials: true });
+  app.use(cookieParser());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.setGlobalPrefix('api');
 
   app.useStaticAssets(join(process.cwd(), 'src', 'api', 'session', 'images'), { prefix: '/images' });

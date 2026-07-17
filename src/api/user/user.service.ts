@@ -1,26 +1,39 @@
-import { Injectable, ConflictException } from '@nestjs/common';
-import * as bcrypt from 'bcryptjs';
+import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
 
 import { PrismaService } from '../../infra/prisma/prisma.service';
+import { RedisService } from '../../infra/redis/redis.service';
+import type { UserModel } from '../../generated/prisma/models';
 
 import { CreateUserDto } from './dto/create-user.dto';
 
-const SALT_ROUNDS = 10;
+/** Full user row, including the password hash. */
+export type UserWithPassword = UserModel;
 
-// Fields returned to callers — never expose the password hash.
-const userSelect = {
-  id: true,
-  nickname: true,
-  role: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
+/** User row safe to return to clients — no password hash. */
+export type User = Omit<UserModel, 'password'>;
+
+/** Strip the password hash before exposing a user to a caller. */
+export const toSafeUser = (user: UserWithPassword): User => {
+  const { password, ...safe } = user;
+  return safe;
+};
+
+// Cache authenticated-user lookups briefly to spare the DB on every request.
+const AUTH_CACHE_TTL_SECONDS = 60;
+const authCacheKey = (id: string) => `user:auth:${id}`;
 
 @Injectable()
 export class UserService {
-  public constructor(private readonly prisma: PrismaService) {}
+  public constructor(
+    private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
+  ) {}
 
-  public async create(dto: CreateUserDto) {
+  /**
+   * Create a user. The `password` is expected to be ALREADY HASHED by the
+   * caller (see AuthService) — this service never hashes.
+   */
+  public async create(dto: CreateUserDto): Promise<UserWithPassword> {
     const existing = await this.prisma.user.findUnique({
       where: { nickname: dto.nickname },
     });
@@ -29,26 +42,43 @@ export class UserService {
       throw new ConflictException('Nickname is already taken');
     }
 
-    const password = await bcrypt.hash(dto.password, SALT_ROUNDS);
-
     return this.prisma.user.create({
       data: {
         nickname: dto.nickname,
-        password,
+        password: dto.password,
       },
-      select: userSelect,
     });
   }
 
-  public findAll() {
-    return this.prisma.user.findMany({ select: userSelect });
+  public findAll(): Promise<User[]> {
+    return this.prisma.user.findMany({
+      omit: { password: true },
+    });
   }
 
-  public findByNickname(nickname: string) {
+  public findByNickname(nickname: string): Promise<UserWithPassword | null> {
     return this.prisma.user.findUnique({ where: { nickname } });
   }
 
-  public findById(id: string) {
-    return this.prisma.user.findUnique({ where: { id }, select: userSelect });
+  public findById(id: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { id },
+      omit: { password: true },
+    });
+  }
+
+  /** Cached lookup used on every authenticated request. Throws if the user is gone. */
+  public async findByIdForAuth(id: string): Promise<User> {
+    const user = await this.redis.retrieve<User | null>({
+      key: authCacheKey(id),
+      ttl: AUTH_CACHE_TTL_SECONDS,
+      strategy: () => this.findById(id),
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User no longer exists');
+    }
+
+    return user;
   }
 }

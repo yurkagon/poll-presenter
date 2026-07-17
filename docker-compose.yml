@@ -21,3 +21,21 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  redis:
+    image: redis:8-alpine
+    container_name: poll-presenter-redis
+    restart: unless-stopped
+    # `--appendonly yes` enables AOF persistence so data survives restarts.
+    command: redis-server --requirepass ${REDIS_PASSWORD:-poll} --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      # Relative bind-mount → Redis persistence files live in the project folder
+      # and travel with the project, same as Postgres above.
+      - ./storage/db/redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD:-poll} ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
