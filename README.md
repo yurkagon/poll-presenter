@@ -114,7 +114,7 @@ Vote state is stored in `localStorage` keyed by `voted:<sessionCode>:<questionId
 │                │ • subSession (UUID)  │                         │
 │                └──────────────────────┘                         │
 │                                                                 │
-│   Static: /images/*  ← src/session/images/                      │
+│   Static: /images/*  ← src/api/session/images/                  │
 │   Static: SPA fallback → build/index.html                       │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -282,7 +282,7 @@ Both are required — Nest fails to boot otherwise (`getOrThrow`). `CORS_ORIGINS
 
 ## Session config
 
-The single session (code `88309117`), its 8 questions, and option labels live in [`src/session/constants.ts`](src/session/constants.ts). To add or change questions, edit that file — `npm run dev` picks it up via watch mode.
+The single session (code `88309117`), its 8 questions, and option labels live in [`src/api/session/constants.ts`](src/api/session/constants.ts). To add or change questions, edit that file — `npm run dev` picks it up via watch mode.
 
 ```typescript
 {

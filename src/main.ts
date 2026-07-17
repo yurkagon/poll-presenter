@@ -19,7 +19,7 @@ async function bootstrap() {
   app.enableCors({ origin: corsOrigins, credentials: true });
   app.setGlobalPrefix('api');
 
-  app.useStaticAssets(join(process.cwd(), 'src', 'session', 'images'), { prefix: '/images' });
+  app.useStaticAssets(join(process.cwd(), 'src', 'api', 'session', 'images'), { prefix: '/images' });
 
   const buildPath = join(__dirname, '..', '..', 'build');
   const indexHtml = join(buildPath, 'index.html');

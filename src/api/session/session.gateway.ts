@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
-import { Session, SessionResults, WS_EVENTS } from '../../shared/types';
+import { Session, SessionResults, WS_EVENTS } from '../../../shared/types';
 
 @WebSocketGateway()
 export class SessionGateway

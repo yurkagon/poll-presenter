@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { SessionGateway } from './session.gateway';
-import { VotePayload, RevotePayload, SetQuestionPayload, SetThemePayload } from '../../shared/types';
+import { VotePayload, RevotePayload, SetQuestionPayload, SetThemePayload } from '../../../shared/types';
 
 @Controller('session')
 export class SessionController {

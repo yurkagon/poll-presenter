@@ -33,3 +33,6 @@ Thumbs.db
 # Local database files (kept inside the project, but not committed)
 /storage/db/postgress/*
 !/storage/db/postgress/.gitkeep
+
+# Prisma generated client
+/src/generated/

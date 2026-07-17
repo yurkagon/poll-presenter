@@ -1,4 +1,4 @@
-import { SessionOption, SessionQuestion } from '../../shared/types';
+import { SessionOption, SessionQuestion } from '../../../shared/types';
 
 export const SESSION_CODE = '88309117';
 

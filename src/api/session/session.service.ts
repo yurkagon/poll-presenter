@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Session, SessionResults, VoteResult, Theme } from '../../shared/types';
+import { Session, SessionResults, VoteResult, Theme } from '../../../shared/types';
 import { QUESTIONS, SESSION_CODE } from './constants';
 
 @Injectable()

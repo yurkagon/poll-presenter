@@ -87,7 +87,7 @@ npm run start    # node dist/src/main  (serves API + built SPA on :3000)
 npm run prod     # build + pm2 start
 ```
 
-In dev, hit `http://localhost:5173` — Vite proxies `/api` and `/socket.io` to `:3000`. In prod, Nest serves `build/index.html` as the SPA fallback (see `main.ts` middleware) and exposes `/images/*` from `src/session/images/`.
+In dev, hit `http://localhost:5173` — Vite proxies `/api` and `/socket.io` to `:3000`. In prod, Nest serves `build/index.html` as the SPA fallback (see `main.ts` middleware) and exposes `/images/*` from `src/api/session/images/`.
 
 ## Environment
 
@@ -102,7 +102,7 @@ In dev, hit `http://localhost:5173` — Vite proxies `/api` and `/socket.io` to 
 - **Type-only imports on the frontend** (`import type { ... } from '@shared/types'`) — the file is path-aliased, not a package.
 - **No auth, no validation pipeline.** `class-validator` is in deps but not wired. Trust client input at your own risk; this is an MVP for a known audience.
 - **No persistence.** Server restart = blank slate. Don't add file/db writes without flagging it — the in-memory design is intentional for the MVP.
-- **Image assets live under the backend** (`src/session/images/`) and are served at `/images/*`. Reference them from question data as `/images/qN.webp`.
+- **Image assets live under the backend** (`src/api/session/images/`) and are served at `/images/*`. Reference them from question data as `/images/qN.webp`.
 - **`subSession`** is rotated on reset so participant clients can detect "the session restarted" and clear local UI state — preserve this behavior if you touch `resetSession`.
 - **Static-asset prefix order matters** in `main.ts`: API, socket.io, and `/images` must short-circuit before the SPA fallback.
 
