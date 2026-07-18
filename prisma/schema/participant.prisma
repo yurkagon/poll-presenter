@@ -1,0 +1,14 @@
+model Participant {
+  id       String  @id @default(uuid())
+  deviceId String  @unique @map("device_id")
+  name     String?
+  teamId   String? @map("team_id")
+  team     Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  votes Vote[]
+
+  @@index([teamId])
+  @@map("participants")
+}

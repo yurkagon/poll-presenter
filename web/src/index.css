@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,6 +6,7 @@
 
 @layer base {
   :root {
+    /* shadcn tokens (kept for Button/Card primitives) */
     --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
     --card: 0 0% 100%;
@@ -13,7 +14,7 @@
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 262.1 83.3% 57.8%;
-    --primary: 262.1 83.3% 57.8%;
+    --primary: 222 100% 50%;
     --primary-foreground: 210 20% 98%;
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 220.9 39.3% 11%;
@@ -22,39 +23,75 @@
     --accent: 220 14.3% 95.9%;
     --accent-foreground: 220.9 39.3% 11%;
     --radius: 0.75rem;
-  }
 
-  .dark {
-    --background: 0 0% 8%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 11%;
-    --card-foreground: 0 0% 98%;
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 268 95% 58%;
-    --primary: 268 95% 58%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 14%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 0 0% 14%;
-    --accent-foreground: 0 0% 98%;
-  }
+    /* єФрендшіп design tokens (ported from the prototype :root) */
+    --ef-bg-1: #bfe3ee;
+    --ef-bg-2: #cfeadd;
+    --ef-bg-3: #e2f0cf;
+    --ef-ink: #10151a;
+    --ef-ink-soft: #57636d;
+    --ef-ink-faint: #8b98a1;
+    --ef-card: rgba(255, 255, 255, 0.6);
+    --ef-card-solid: #ffffff;
+    --ef-card-border: rgba(255, 255, 255, 0.85);
+    --ef-badge: #14171a;
+    --ef-accent-blue: #0057ff;
+    --ef-accent-green: #22c56e;
+    --ef-nav-bg: #0c0e11;
 
-  .dark {
-    --bar-filter: brightness(1.2) saturate(1.4);
+    --ef-stage-1: #050a14;
+    --ef-stage-2: #0a1730;
+    --ef-stage-3: #0c2130;
+    --ef-glow: #3ad0ff;
+
+    /* team palette (data-facing, unprefixed) */
+    --t1: #ff6b6b;
+    --t2: #4d96ff;
+    --t3: #ffcb3d;
+    --t4: #6bcb77;
+    --t5: #b06bf0;
+    --t6: #00c2a8;
+    --t7: #ff9f45;
+
+    --cat-punct: #8ea2b6;
+    --cat-sport: #4d96ff;
+    --cat-creative: #b06bf0;
+    --cat-general: #ffcb3d;
   }
 
   * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-family: 'Inter', system-ui, sans-serif;
+    margin: 0;
+    font-family: 'Manrope', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  /* Light mint surface — phone + admin */
+  .ef-surface-light {
+    background:
+      radial-gradient(1200px 700px at 15% -10%, #d9f0ea 0%, transparent 60%),
+      linear-gradient(155deg, var(--ef-bg-1) 0%, var(--ef-bg-2) 45%, var(--ef-bg-3) 100%);
+    color: var(--ef-ink);
+  }
+
+  /* Dark navy surface — big screen */
+  .ef-surface-dark {
+    background:
+      radial-gradient(1200px 500px at 50% -10%, #142a45 0%, transparent 60%),
+      linear-gradient(180deg, var(--ef-stage-1) 0%, var(--ef-stage-2) 100%);
+    color: #fff;
+  }
+
+  .ef-glass {
+    background: var(--ef-card);
+    border: 1px solid var(--ef-card-border);
+    backdrop-filter: blur(6px);
   }
 }

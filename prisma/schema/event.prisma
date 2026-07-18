@@ -1,0 +1,61 @@
+enum EventCategory {
+  PUNCT
+  SPORT
+  CREATIVE
+  GENERAL
+}
+
+enum EventType {
+  PLACEMENT
+  HYBRID
+  INDIVIDUAL
+  SIMPLE_VOTE
+  EURO_VOTE
+  JURY
+}
+
+enum EventWeight {
+  NORMAL
+  BIG
+  KEY
+}
+
+enum ParticipantMode {
+  TEAMS
+  ADHOC
+  INDIVIDUALS
+}
+
+enum EventStatus {
+  DRAFT
+  LOBBY
+  OPEN
+  CLOSED
+  REVEALED
+  COMPLETED
+}
+
+model Event {
+  id              String          @id @default(uuid())
+  name            String
+  dayId           String?         @map("day_id")
+  day             Day?            @relation(fields: [dayId], references: [id], onDelete: SetNull)
+  category        EventCategory   @default(GENERAL)
+  type            EventType
+  weight          EventWeight     @default(NORMAL)
+  participantMode ParticipantMode @default(TEAMS) @map("participant_mode")
+  affectsScore    Boolean         @default(true) @map("affects_score")
+  status          EventStatus     @default(DRAFT)
+  revealStep      Int             @default(0) @map("reveal_step")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  votes      Vote[]
+  juryScores JuryScore[]
+  result     EventResult?
+
+  @@index([dayId])
+  @@index([status])
+  @@map("events")
+}

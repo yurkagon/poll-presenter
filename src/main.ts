@@ -23,8 +23,6 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.setGlobalPrefix('api');
 
-  app.useStaticAssets(join(process.cwd(), 'src', 'api', 'session', 'images'), { prefix: '/images' });
-
   const buildPath = join(__dirname, '..', '..', 'build');
   const indexHtml = join(buildPath, 'index.html');
   const hasBuild = existsSync(indexHtml);
@@ -36,8 +34,7 @@ async function bootstrap() {
     expressApp.use((req: Request, res: Response, next: NextFunction) => {
       if (
         req.path.startsWith('/api') ||
-        req.path.startsWith('/socket.io') ||
-        req.path.startsWith('/images')
+        req.path.startsWith('/socket.io')
       ) {
         return next();
       }
@@ -49,7 +46,7 @@ async function bootstrap() {
   }
 
   await app.listen(port);
-  console.log(`\n🗳  Poll Presenter → http://localhost:${port}\n`);
+  console.log(`\n🤝  єФрендшіп → http://localhost:${port}\n`);
 }
 
 bootstrap();

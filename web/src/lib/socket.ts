@@ -1,40 +1,48 @@
 import { io, Socket } from 'socket.io-client';
-import type { Session, SessionResults } from '@shared/types';
+import { useEffect } from 'react';
+import type {
+  GameState,
+  EventSnapshot,
+  LobbySnapshot,
+  VoteProgress,
+  VoteResults,
+  JuryScoreDto,
+  LeaderboardDto,
+  EuroRevealEntry,
+  PresenceRole,
+} from '@shared/types';
 import { WS_EVENTS } from '@shared/types';
 
 const socket: Socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
 
-export function joinSession(sessionCode: string) {
-  socket.emit(WS_EVENTS.JOIN_SESSION, { sessionCode });
+export function joinLive(role: PresenceRole, deviceId?: string) {
+  const emit = () => socket.emit(WS_EVENTS.PRESENCE_JOIN, { role, deviceId });
+  if (socket.connected) emit();
+  socket.on('connect', emit);
 }
 
-export function onResultsUpdated(cb: (results: SessionResults) => void) {
-  socket.on(WS_EVENTS.RESULTS_UPDATED, cb);
-  return () => socket.off(WS_EVENTS.RESULTS_UPDATED, cb);
+/** Subscribe to a socket event for the lifetime of a React component. */
+export function useSocketEvent<T>(event: string, handler: (payload: T) => void) {
+  useEffect(() => {
+    socket.on(event, handler as (p: unknown) => void);
+    return () => {
+      socket.off(event, handler as (p: unknown) => void);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event, handler]);
 }
 
-export function onQuestionChanged(
-  cb: (payload: { session: Session; results: SessionResults }) => void,
-) {
-  socket.on(WS_EVENTS.QUESTION_CHANGED, cb);
-  return () => socket.off(WS_EVENTS.QUESTION_CHANGED, cb);
-}
+export const EV = WS_EVENTS;
 
-export function onSessionReset(
-  cb: (payload: { session: Session; results: SessionResults }) => void,
-) {
-  socket.on(WS_EVENTS.SESSION_RESET, cb);
-  return () => socket.off(WS_EVENTS.SESSION_RESET, cb);
-}
-
-export function onThemeChanged(cb: (payload: { session: Session }) => void) {
-  socket.on(WS_EVENTS.THEME_CHANGED, cb);
-  return () => socket.off(WS_EVENTS.THEME_CHANGED, cb);
-}
-
-export function onResultsRevealed(cb: (payload: { session: Session }) => void) {
-  socket.on(WS_EVENTS.RESULTS_REVEALED, cb);
-  return () => socket.off(WS_EVENTS.RESULTS_REVEALED, cb);
-}
+export type {
+  GameState,
+  EventSnapshot,
+  LobbySnapshot,
+  VoteProgress,
+  VoteResults,
+  JuryScoreDto,
+  LeaderboardDto,
+  EuroRevealEntry,
+};
 
 export { socket };

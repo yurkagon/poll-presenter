@@ -1,0 +1,15 @@
+model JuryScore {
+  id      String @id @default(uuid())
+  eventId String @map("event_id")
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  teamId  String @map("team_id")
+  team    Team   @relation(fields: [teamId], references: [id])
+  points  Int    @default(0) // running total; "+N" increments this row
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([eventId, teamId])
+  @@index([eventId])
+  @@map("jury_scores")
+}

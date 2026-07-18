@@ -1,0 +1,16 @@
+model EventResult {
+  id      String @id @default(uuid())
+  eventId String @unique @map("event_id")
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  placement         String[] @default([]) // ordered teamIds (PLACEMENT + tallied vote types)
+  audienceRaw       Json?    @map("audience_raw") // { teamId: rawCount } (HYBRID audience)
+  juryRaw           Json?    @map("jury_raw") // { teamId: rawScore } (HYBRID jury)
+  individualWinners Json?    @map("individual_winners") // [{ award, name, teamId? }]
+  computedPoints    Json     @default("{}") @map("computed_points") // { teamId: finalPoints } frozen at COMPLETE
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("event_results")
+}

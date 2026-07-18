@@ -1,0 +1,18 @@
+enum DisplayMode {
+  LOBBY
+  EVENT
+  LEADERBOARD
+  IDLE
+}
+
+// Singleton row (id always "singleton") holding what the presenter/phones
+// should currently show. There is exactly one live game for the whole camp.
+model AppState {
+  id            String      @id @default("singleton")
+  displayMode   DisplayMode @default(LOBBY) @map("display_mode")
+  activeEventId String?     @map("active_event_id")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("app_state")
+}

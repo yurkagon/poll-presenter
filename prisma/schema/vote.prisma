@@ -1,0 +1,20 @@
+model Vote {
+  id            String      @id @default(uuid())
+  eventId       String      @map("event_id")
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participantId String      @map("participant_id")
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  targetTeamId  String      @map("target_team_id")
+  targetTeam    Team        @relation("VoteTargetTeam", fields: [targetTeamId], references: [id])
+  // 0 = unranked simple vote; 1/2/3 = Eurovision rank. Non-null so the
+  // unique indexes below actually enforce one-vote / one-per-rank.
+  rank          Int         @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([eventId, participantId, rank], name: "uniq_vote_per_rank")
+  @@unique([eventId, participantId, targetTeamId], name: "uniq_target_per_event")
+  @@index([eventId])
+  @@index([targetTeamId])
+  @@map("votes")
+}

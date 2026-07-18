@@ -1,0 +1,15 @@
+model Team {
+  id    String @id @default(uuid())
+  name  String @unique
+  icon  String // emoji
+  color String // hex color
+  order Int    @unique
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  participants Participant[]
+  votes        Vote[]        @relation("VoteTargetTeam")
+  juryScores   JuryScore[]
+
+  @@map("teams")
+}
