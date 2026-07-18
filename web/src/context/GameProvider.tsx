@@ -49,13 +49,29 @@ export function GameProvider({
   const [euro, setEuro] = useState<EuroRevealEntry | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardDto | null>(null);
 
+  // Load the snapshot the admin actually selected. When a specific event is
+  // active we fetch it by id (works for any status, e.g. a DRAFT jury event);
+  // otherwise fall back to whatever event is in a live status.
+  const loadSnapshotFor = useCallback((state: GameState) => {
+    const p =
+      state.displayMode === 'EVENT' && state.activeEventId
+        ? api.events.snapshot(state.activeEventId)
+        : api.events.active();
+    p.then(setSnapshot).catch(() => setSnapshot(null));
+  }, []);
+
   const refresh = useCallback(() => {
     api.teams.list().then(setTeams).catch(() => {});
-    api.game.state().then(setGameState).catch(() => {});
-    api.events.active().then(setSnapshot).catch(() => setSnapshot(null));
+    api.game
+      .state()
+      .then((s) => {
+        setGameState(s);
+        loadSnapshotFor(s);
+      })
+      .catch(() => {});
     api.participants.lobby().then(setLobby).catch(() => {});
     api.leaderboard({ scope: 'overall' }).then(setLeaderboard).catch(() => {});
-  }, []);
+  }, [loadSnapshotFor]);
 
   useEffect(() => {
     joinLive(role, deviceId);
@@ -64,10 +80,13 @@ export function GameProvider({
 
   useSocketEvent<GameState>(
     EV.GAME_STATE,
-    useCallback((s: GameState) => {
-      setGameState(s);
-      api.events.active().then(setSnapshot).catch(() => setSnapshot(null));
-    }, []),
+    useCallback(
+      (s: GameState) => {
+        setGameState(s);
+        loadSnapshotFor(s);
+      },
+      [loadSnapshotFor],
+    ),
   );
   useSocketEvent<EventSnapshot>(EV.EVENT_STATE, useCallback((s) => setSnapshot(s), []));
   useSocketEvent<LobbySnapshot>(EV.LOBBY_UPDATED, useCallback((l) => setLobby(l), []));

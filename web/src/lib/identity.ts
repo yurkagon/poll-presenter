@@ -22,3 +22,17 @@ export function markVoted(eventId: string): void {
 export function hasVoted(eventId: string): boolean {
   return localStorage.getItem(votedKey(eventId)) === '1';
 }
+
+const VOTED_PREFIX = 'efrendship:voted:';
+
+/** All eventIds this device has already voted in (persisted across reloads). */
+export function loadVotedEventIds(): string[] {
+  const ids: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith(VOTED_PREFIX) && localStorage.getItem(key) === '1') {
+      ids.push(key.slice(VOTED_PREFIX.length));
+    }
+  }
+  return ids;
+}

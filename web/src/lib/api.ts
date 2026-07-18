@@ -20,12 +20,46 @@ import type {
 
 const BASE = '/api';
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+// Single in-flight refresh shared by concurrent 401s.
+let refreshPromise: Promise<boolean> | null = null;
+function tryRefresh(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = fetch(`${BASE}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+      .then((r) => r.ok)
+      .catch(() => false);
+    // Clear once settled so the next expiry can refresh again.
+    refreshPromise.finally(() => {
+      setTimeout(() => {
+        refreshPromise = null;
+      }, 0);
+    });
+  }
+  return refreshPromise;
+}
+
+async function request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...init?.headers },
     ...init,
   });
+
+  // Access token expired but a valid refresh cookie may still exist —
+  // silently rotate it once and retry, so the admin isn't bounced to login.
+  if (
+    res.status === 401 &&
+    !retried &&
+    path !== '/auth/refresh' &&
+    path !== '/auth/login'
+  ) {
+    if (await tryRefresh()) {
+      return request<T>(path, init, true);
+    }
+  }
+
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`API ${res.status}: ${text}`);

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { createContext, useContext, useCallback, useEffect, useState } from 'react';
 import type { Participant } from '@shared/types';
 import { api } from '@/lib/api';
-import { ensureDeviceId, markVoted, hasVoted } from '@/lib/identity';
+import { ensureDeviceId, markVoted, loadVotedEventIds } from '@/lib/identity';
 
 interface ParticipantContextValue {
   deviceId: string;
@@ -21,6 +21,11 @@ export function ParticipantProvider({ children }: { children: React.ReactNode })
   const [deviceId] = useState(() => ensureDeviceId());
   const [participant, setParticipant] = useState<Participant | null>(null);
   const [ready, setReady] = useState(false);
+  // Kept in React state (not just localStorage) so the UI switches to the
+  // "voted" screen immediately after a vote, without a reload.
+  const [votedEvents, setVotedEvents] = useState<Set<string>>(
+    () => new Set(loadVotedEventIds()),
+  );
 
   useEffect(() => {
     let alive = true;
@@ -42,20 +47,30 @@ export function ParticipantProvider({ children }: { children: React.ReactNode })
     [deviceId],
   );
 
+  const rememberVote = useCallback((eventId: string) => {
+    markVoted(eventId);
+    setVotedEvents((prev) => new Set(prev).add(eventId));
+  }, []);
+
   const castVote = useCallback(
     async (eventId: string, targetTeamId: string) => {
       await api.votes.cast(eventId, deviceId, targetTeamId);
-      markVoted(eventId);
+      rememberVote(eventId);
     },
-    [deviceId],
+    [deviceId, rememberVote],
   );
 
   const castEuroVote = useCallback(
     async (eventId: string, ranking: string[]) => {
       await api.votes.castEuro(eventId, deviceId, ranking);
-      markVoted(eventId);
+      rememberVote(eventId);
     },
-    [deviceId],
+    [deviceId, rememberVote],
+  );
+
+  const hasVotedFor = useCallback(
+    (eventId: string) => votedEvents.has(eventId),
+    [votedEvents],
   );
 
   return (
@@ -68,7 +83,7 @@ export function ParticipantProvider({ children }: { children: React.ReactNode })
         pickTeam,
         castVote,
         castEuroVote,
-        hasVotedFor: hasVoted,
+        hasVotedFor,
       }}
     >
       {children}
