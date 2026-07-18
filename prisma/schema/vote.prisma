@@ -5,7 +5,7 @@ model Vote {
   participantId String      @map("participant_id")
   participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
   targetTeamId  String      @map("target_team_id")
-  targetTeam    Team        @relation("VoteTargetTeam", fields: [targetTeamId], references: [id])
+  targetTeam    Team        @relation("VoteTargetTeam", fields: [targetTeamId], references: [id], onDelete: Cascade)
   // 0 = unranked simple vote; 1/2/3 = Eurovision rank. Non-null so the
   // unique indexes below actually enforce one-vote / one-per-rank.
   rank          Int         @default(0)
