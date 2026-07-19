@@ -28,12 +28,22 @@ async function main() {
   const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
   try {
+    // Permanent camp teams have eventId = null. Since `name` is only unique
+    // per-event now (@@unique([eventId, name])) and NULL event_id doesn't
+    // participate in a unique index, upsert-on-name no longer works — match
+    // the existing permanent team by name manually to stay idempotent.
     for (const team of TEAMS) {
-      await prisma.team.upsert({
-        where: { name: team.name },
-        update: { icon: team.icon, color: team.color, order: team.order },
-        create: team,
+      const existing = await prisma.team.findFirst({
+        where: { name: team.name, eventId: null },
       });
+      if (existing) {
+        await prisma.team.update({
+          where: { id: existing.id },
+          data: { icon: team.icon, color: team.color, order: team.order },
+        });
+      } else {
+        await prisma.team.create({ data: { ...team, eventId: null } });
+      }
     }
     console.log(`✓ seeded ${TEAMS.length} teams`);
 
