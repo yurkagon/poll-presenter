@@ -6,7 +6,6 @@ import type {
   EventSnapshot,
   LobbySnapshot,
   VoteProgress,
-  VoteResults,
   JuryScoreDto,
   LeaderboardDto,
   EuroRevealEntry,
@@ -17,10 +16,11 @@ import { EV, joinLive, useSocketEvent } from '@/lib/socket';
 
 interface GameContextValue {
   teams: Team[];
+  /** Teams competing in the currently active event — its ad-hoc roster, or `teams` for camp-team events. */
+  eventTeams: Team[];
   gameState: GameState;
   snapshot: EventSnapshot | null;
   lobby: LobbySnapshot;
-  results: VoteResults | null;
   euro: EuroRevealEntry | null;
   leaderboard: LeaderboardDto | null;
   teamById: (id: string | null | undefined) => Team | undefined;
@@ -39,13 +39,13 @@ export function GameProvider({
   children: React.ReactNode;
 }) {
   const [teams, setTeams] = useState<Team[]>([]);
+  const [eventTeams, setEventTeams] = useState<Team[]>([]);
   const [gameState, setGameState] = useState<GameState>({
     displayMode: 'LOBBY',
     activeEventId: null,
   });
   const [snapshot, setSnapshot] = useState<EventSnapshot | null>(null);
   const [lobby, setLobby] = useState<LobbySnapshot>({ teams: [], totalParticipants: 0 });
-  const [results, setResults] = useState<VoteResults | null>(null);
   const [euro, setEuro] = useState<EuroRevealEntry | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardDto | null>(null);
 
@@ -78,6 +78,15 @@ export function GameProvider({
     refresh();
   }, [role, deviceId, refresh]);
 
+  const activeEventId = snapshot?.event.id ?? null;
+  useEffect(() => {
+    if (!activeEventId) {
+      setEventTeams([]);
+      return;
+    }
+    api.events.teams(activeEventId).then(setEventTeams).catch(() => {});
+  }, [activeEventId]);
+
   useSocketEvent<GameState>(
     EV.GAME_STATE,
     useCallback(
@@ -108,7 +117,6 @@ export function GameProvider({
       [],
     ),
   );
-  useSocketEvent<VoteResults>(EV.RESULTS_UPDATED, useCallback((r) => setResults(r), []));
   useSocketEvent<LeaderboardDto>(EV.LEADERBOARD_UPDATED, useCallback((l) => setLeaderboard(l), []));
   useSocketEvent<EuroRevealEntry>(EV.EURO_REVEAL, useCallback((e) => setEuro(e), []));
 
@@ -119,7 +127,7 @@ export function GameProvider({
 
   return (
     <GameContext.Provider
-      value={{ teams, gameState, snapshot, lobby, results, euro, leaderboard, teamById, refresh }}
+      value={{ teams, eventTeams, gameState, snapshot, lobby, euro, leaderboard, teamById, refresh }}
     >
       {children}
     </GameContext.Provider>

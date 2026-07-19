@@ -39,7 +39,7 @@ export function AdminEventFormPage() {
   const [name, setName] = useState('');
   const [dayId, setDayId] = useState<string | null>(null);
   const [category, setCategory] = useState<EventCategory>('GENERAL');
-  const [type, setType] = useState<EventType>('SIMPLE_VOTE');
+  const [type, setType] = useState<EventType>('SCORE_ENTRY');
   const [weight, setWeight] = useState<EventWeight>('NORMAL');
   const [participantMode, setParticipantMode] = useState<ParticipantMode>('TEAMS');
   const [affectsScore, setAffectsScore] = useState(true);
@@ -102,28 +102,30 @@ export function AdminEventFormPage() {
       </Field>
 
       <Field label="Як рахувати результат">
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-          {EVENT_TYPES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => {
-                setType(t.id);
-                if (t.id === 'INDIVIDUAL') {
-                  setParticipantMode('INDIVIDUALS');
-                  setAffectsScore(false);
-                }
-              }}
-              className={cn(
-                'rounded-2xl border-[1.5px] bg-[#fafbfc] p-3.5 text-left transition-all',
-                type === t.id ? 'border-ink bg-white shadow-glass' : 'border-[#eef0f2]',
-              )}
-            >
-              <div className="mb-2 text-lg">{t.icon}</div>
-              <div className="mb-1 text-[12.5px] font-extrabold text-ink">{t.title}</div>
-              <div className="text-[11px] font-semibold leading-tight text-ink-soft">{t.desc}</div>
-            </button>
-          ))}
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+          {EVENT_TYPES.map((t) => {
+            const active = type === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setType(t.id)}
+                className={cn(
+                  'relative rounded-2xl border-[1.5px] bg-[#fafbfc] p-3.5 text-left transition-all',
+                  active ? 'border-ink bg-white shadow-glass' : 'border-[#eef0f2]',
+                )}
+              >
+                {active && (
+                  <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-accent-green text-[11px] font-extrabold text-white">
+                    ✓
+                  </span>
+                )}
+                <div className="mb-2 text-lg">{t.icon}</div>
+                <div className="mb-1 text-[12.5px] font-extrabold text-ink">{t.title}</div>
+                <div className="text-[11px] font-semibold leading-tight text-ink-soft">{t.desc}</div>
+              </button>
+            );
+          })}
         </div>
       </Field>
 
@@ -148,24 +150,27 @@ export function AdminEventFormPage() {
         </div>
       </Field>
 
-      {type !== 'INDIVIDUAL' && (
-        <Field label="Хто змагається">
-          <div className="flex flex-wrap gap-2">
-            {PARTICIPANT_MODES.filter((m) => m.id !== 'INDIVIDUALS').map((m) => (
-              <Chip
-                key={m.id}
-                active={m.id === participantMode}
-                onClick={() => {
-                  setParticipantMode(m.id);
-                  setAffectsScore(m.id !== 'ADHOC');
-                }}
-              >
-                {m.label}
-              </Chip>
-            ))}
-          </div>
-        </Field>
-      )}
+      <Field label="Хто змагається">
+        <div className="flex flex-wrap gap-2">
+          {PARTICIPANT_MODES.map((m) => (
+            <Chip
+              key={m.id}
+              active={m.id === participantMode}
+              onClick={() => {
+                setParticipantMode(m.id);
+                setAffectsScore(m.id !== 'ADHOC');
+              }}
+            >
+              {m.label}
+            </Chip>
+          ))}
+        </div>
+        {participantMode === 'ADHOC' && (
+          <p className="mt-2 text-[11.5px] font-semibold text-ink-soft">
+            Команди для цієї події додаси після збереження — на вкладці «Введення результату» чи «Керування».
+          </p>
+        )}
+      </Field>
 
       <Field label="Впливає на загальний рейтинг">
         <div className="flex items-center justify-between gap-4 rounded-2xl border border-[#eef0f2] bg-[#f8f9fb] px-4 py-3.5">

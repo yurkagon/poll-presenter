@@ -13,7 +13,6 @@ import {
 
 import { Authorization } from '../../common/decorators/authorization.decorator';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
-import { VoteService } from '../vote/vote.service';
 import { LeaderboardService } from '../leaderboard/leaderboard.service';
 import { ParticipantService } from '../participant/participant.service';
 
@@ -26,7 +25,6 @@ import { EventStatus } from '../../../shared/types';
 export class EventController {
   public constructor(
     private readonly events: EventService,
-    private readonly votes: VoteService,
     private readonly leaderboard: LeaderboardService,
     private readonly participants: ParticipantService,
     private readonly realtime: RealtimeGateway,
@@ -51,6 +49,11 @@ export class EventController {
   @Get(':id')
   public snapshot(@Param('id') id: string) {
     return this.events.snapshot(id);
+  }
+
+  @Get(':id/teams')
+  public teams(@Param('id') id: string) {
+    return this.events.effectiveTeams(id);
   }
 
   // ─── CRUD ──────────────────────────────────────────────────────────────
@@ -97,7 +100,6 @@ export class EventController {
   @Post(':id/close')
   public async close(@Param('id') id: string) {
     const snapshot = await this.events.closeAndTally(id);
-    this.realtime.emitResults(await this.votes.results(id));
     this.realtime.emitEventState(snapshot);
     return snapshot;
   }
@@ -116,8 +118,8 @@ export class EventController {
   public async reveal(@Param('id') id: string) {
     const snapshot = await this.events.setStatus(id, 'REVEALED');
     this.realtime.emitEventState(snapshot);
-    if (snapshot.event.type === 'EURO_VOTE') {
-      this.realtime.emitEuroReveal({ eventId: id, step: 0, phase: 'jury' });
+    if (snapshot.event.type === 'EURO') {
+      this.realtime.emitEuroReveal({ eventId: id, step: 0, phase: 'audience' });
     }
     return snapshot;
   }

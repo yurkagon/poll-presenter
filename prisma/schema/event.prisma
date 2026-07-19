@@ -6,12 +6,8 @@ enum EventCategory {
 }
 
 enum EventType {
-  PLACEMENT
-  HYBRID
-  INDIVIDUAL
-  SIMPLE_VOTE
-  EURO_VOTE
-  JURY
+  SCORE_ENTRY
+  EURO
 }
 
 enum EventWeight {
@@ -23,7 +19,6 @@ enum EventWeight {
 enum ParticipantMode {
   TEAMS
   ADHOC
-  INDIVIDUALS
 }
 
 enum EventStatus {
@@ -54,6 +49,7 @@ model Event {
   votes      Vote[]
   juryScores JuryScore[]
   result     EventResult?
+  teams      Team[]
 
   @@index([dayId])
   @@index([status])

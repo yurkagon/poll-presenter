@@ -5,15 +5,9 @@
 // ─── Enums (mirror Prisma enums) ───────────────────────────────────────────────
 
 export type EventCategory = 'PUNCT' | 'SPORT' | 'CREATIVE' | 'GENERAL';
-export type EventType =
-  | 'PLACEMENT'
-  | 'HYBRID'
-  | 'INDIVIDUAL'
-  | 'SIMPLE_VOTE'
-  | 'EURO_VOTE'
-  | 'JURY';
+export type EventType = 'SCORE_ENTRY' | 'EURO';
 export type EventWeight = 'NORMAL' | 'BIG' | 'KEY';
-export type ParticipantMode = 'TEAMS' | 'ADHOC' | 'INDIVIDUALS';
+export type ParticipantMode = 'TEAMS' | 'ADHOC';
 export type EventStatus =
   | 'DRAFT'
   | 'LOBBY'
@@ -31,6 +25,7 @@ export interface Team {
   icon: string; // emoji
   color: string; // hex
   order: number;
+  eventId?: string | null; // set for ad-hoc teams scoped to one event
 }
 
 export interface Participant {
@@ -44,12 +39,6 @@ export interface Day {
   id: string;
   label: string;
   order: number;
-}
-
-export interface IndividualWinner {
-  award: string;
-  name: string;
-  teamId?: string | null;
 }
 
 export interface EventDto {
@@ -66,10 +55,10 @@ export interface EventDto {
 }
 
 export interface EventResultData {
-  placement: string[]; // ordered teamIds
+  placement: string[]; // ordered teamIds, best..worst
+  scores?: Record<string, number> | null;
   audienceRaw?: Record<string, number> | null;
   juryRaw?: Record<string, number> | null;
-  individualWinners?: IndividualWinner[] | null;
   computedPoints: Record<string, number>;
 }
 
@@ -103,17 +92,6 @@ export interface LobbySnapshot {
   totalParticipants: number;
 }
 
-export interface VoteResultRow {
-  teamId: string;
-  count: number;
-  points?: number;
-}
-
-export interface VoteResults {
-  eventId: string;
-  results: VoteResultRow[];
-}
-
 export interface VoteProgress {
   eventId: string;
   totalVotes: number;
@@ -128,7 +106,7 @@ export interface EuroAllocation {
 export interface EuroRevealEntry {
   eventId: string;
   step: number;
-  phase: 'jury' | 'audience' | 'done';
+  phase: 'audience' | 'done';
 }
 
 export interface LeaderboardRow {
@@ -161,6 +139,7 @@ export interface CreateTeamPayload {
   icon: string;
   color: string;
   order?: number;
+  eventId?: string;
 }
 
 export type UpdateTeamPayload = Partial<CreateTeamPayload>;
@@ -177,21 +156,15 @@ export interface CreateEventPayload {
 
 export type UpdateEventPayload = Partial<CreateEventPayload>;
 
-export interface CastVotePayload {
-  deviceId: string;
-  targetTeamId: string;
-}
-
 export interface CastEuroVotePayload {
   deviceId: string;
   ranking: string[]; // exactly 3 distinct teamIds, none the voter's own
 }
 
 export interface EnterResultPayload {
-  placement?: string[];
+  scores?: Record<string, number>;
   juryRaw?: Record<string, number>;
   audienceRaw?: Record<string, number>;
-  individualWinners?: IndividualWinner[];
 }
 
 export interface AddJuryPayload {
@@ -228,7 +201,6 @@ export const WS_EVENTS = {
   EVENT_STATE: 'event:state',
   LOBBY_UPDATED: 'lobby:updated',
   VOTE_PROGRESS: 'vote:progress',
-  RESULTS_UPDATED: 'results:updated',
   JURY_UPDATED: 'jury:updated',
   LEADERBOARD_UPDATED: 'leaderboard:updated',
   EURO_REVEAL: 'euro:reveal',

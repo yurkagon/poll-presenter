@@ -2,16 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Day, EventDto } from '@shared/types';
 import { api } from '@/lib/api';
-import { categoryOf, typeOf, weightOf } from '@/lib/constants';
-
-const STATUS_LABEL: Record<string, string> = {
-  DRAFT: 'чернетка',
-  LOBBY: 'лобі',
-  OPEN: 'йде голосування',
-  CLOSED: 'закрито',
-  REVEALED: 'розкрито',
-  COMPLETED: 'завершено',
-};
+import { categoryOf, typeOf, weightOf, STATUS_LABEL } from '@/lib/constants';
 
 export function AdminSchedulePage() {
   const [events, setEvents] = useState<EventDto[]>([]);

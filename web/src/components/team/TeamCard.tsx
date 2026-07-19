@@ -23,9 +23,9 @@ export function TeamCard({ team, state = 'default', medal, onClick }: TeamCardPr
       disabled={disabled}
       className={cn(
         'relative flex min-h-[118px] flex-col justify-between rounded-[20px] border p-4 text-left transition-all active:scale-[0.97]',
-        'ef-glass',
-        selected && 'border-transparent !bg-ink text-white',
-        voted && 'border-transparent !bg-accent-blue text-white',
+        !selected && !voted && 'ef-glass',
+        selected && 'border-transparent bg-ink text-white',
+        voted && 'border-transparent bg-accent-blue text-white',
         disabled && 'pointer-events-none opacity-35',
       )}
     >

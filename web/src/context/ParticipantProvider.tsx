@@ -10,7 +10,6 @@ interface ParticipantContextValue {
   myTeamId: string | null;
   ready: boolean;
   pickTeam: (teamId: string) => Promise<void>;
-  castVote: (eventId: string, targetTeamId: string) => Promise<void>;
   castEuroVote: (eventId: string, ranking: string[]) => Promise<void>;
   hasVotedFor: (eventId: string) => boolean;
 }
@@ -52,14 +51,6 @@ export function ParticipantProvider({ children }: { children: React.ReactNode })
     setVotedEvents((prev) => new Set(prev).add(eventId));
   }, []);
 
-  const castVote = useCallback(
-    async (eventId: string, targetTeamId: string) => {
-      await api.votes.cast(eventId, deviceId, targetTeamId);
-      rememberVote(eventId);
-    },
-    [deviceId, rememberVote],
-  );
-
   const castEuroVote = useCallback(
     async (eventId: string, ranking: string[]) => {
       await api.votes.castEuro(eventId, deviceId, ranking);
@@ -81,7 +72,6 @@ export function ParticipantProvider({ children }: { children: React.ReactNode })
         myTeamId: participant?.teamId ?? null,
         ready,
         pickTeam,
-        castVote,
         castEuroVote,
         hasVotedFor,
       }}

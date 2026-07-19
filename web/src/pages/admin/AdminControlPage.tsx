@@ -3,7 +3,8 @@ import type { Team, EventDto, EventSnapshot } from '@shared/types';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { TeamAvatar } from '@/components/team/TeamAvatar';
-import { typeOf } from '@/lib/constants';
+import { AdhocTeamsManager } from '@/components/team/AdhocTeamsManager';
+import { typeOf, STATUS_LABEL } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 export function AdminControlPage() {
@@ -11,12 +12,12 @@ export function AdminControlPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<EventSnapshot | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const loadEvents = useCallback(() => api.events.list().then(setEvents).catch(() => {}), []);
 
   useEffect(() => {
     loadEvents();
-    api.teams.list().then(setTeams).catch(() => {});
   }, [loadEvents]);
 
   const refreshSnapshot = useCallback(
@@ -26,7 +27,9 @@ export function AdminControlPage() {
 
   const select = (id: string) => {
     setSelectedId(id);
+    setError(null);
     refreshSnapshot(id);
+    api.events.teams(id).then(setTeams).catch(() => {});
   };
 
   const after = async (id: string) => {
@@ -36,22 +39,117 @@ export function AdminControlPage() {
 
   const selected = events.find((e) => e.id === selectedId);
   const status = snapshot?.event.status ?? selected?.status;
+  const revealStep = snapshot?.event.revealStep ?? 0;
+  const revealTotal = teams.length;
+  const revealDone = revealStep >= revealTotal;
 
   const showOnScreen = async () => {
     if (!selectedId) return;
     await api.game.setDisplay({ displayMode: 'EVENT', activeEventId: selectedId });
   };
 
-  const act = async (fn: () => Promise<unknown>) => {
+  const friendlyError = (e: unknown): string => {
+    const raw = e instanceof Error ? e.message : String(e);
+    const jsonStart = raw.indexOf('{');
+    if (jsonStart !== -1) {
+      try {
+        const parsed = JSON.parse(raw.slice(jsonStart));
+        if (typeof parsed.message === 'string') return parsed.message;
+      } catch {
+        // fall through to raw message
+      }
+    }
+    return raw;
+  };
+
+  /** Every guided step both puts this event on the shared screen and advances it. */
+  const runStep = (fn: () => Promise<unknown>) => async () => {
     if (!selectedId) return;
-    await fn();
-    await after(selectedId);
+    setError(null);
+    try {
+      await showOnScreen();
+      await fn();
+      await after(selectedId);
+    } catch (e) {
+      setError(friendlyError(e));
+    }
   };
 
   const addJury = async (teamId: string, points: number) => {
     if (!selectedId) return;
-    await api.events.addJury(selectedId, teamId, points);
-    await refreshSnapshot(selectedId);
+    setError(null);
+    try {
+      await api.events.addJury(selectedId, teamId, points);
+      await refreshSnapshot(selectedId);
+    } catch (e) {
+      setError(friendlyError(e));
+    }
+  };
+
+  type Step = { label: string; help: string; run: () => Promise<void> };
+
+  const nextStep = (event: EventDto): Step | null => {
+    if (status === 'COMPLETED') return null;
+
+    if (event.type === 'SCORE_ENTRY') {
+      if (status !== 'REVEALED') {
+        return {
+          label: '📺 Показати подіум і почати розкриття',
+          help: 'Перемкне спільний екран на цю подію — місця поки приховані.',
+          run: runStep(() => api.events.reveal(event.id)),
+        };
+      }
+      if (!revealDone) {
+        return {
+          label: `▶ Показати наступне місце (${revealStep}/${revealTotal})`,
+          help: 'Відкриває місця від останнього до першого — натискай, коли готовий(-а) показати наступне.',
+          run: runStep(() => api.events.euroNext(event.id)),
+        };
+      }
+      return {
+        label: '✓ Завершити подію',
+        help: 'Зафіксує бали цієї події в турнірній таблиці.',
+        run: runStep(() => api.events.complete(event.id)),
+      };
+    }
+
+    // EURO
+    if (status === 'DRAFT' || status === 'LOBBY') {
+      return {
+        label: '📺 Відкрити голосування глядачів',
+        help: 'Учасники зможуть проголосувати за 3 команди (не свою). Голоси нікому не показуються.',
+        run: runStep(() => api.events.open(event.id)),
+      };
+    }
+    if (status === 'OPEN') {
+      const p = snapshot?.progress;
+      return {
+        label: '🔒 Закрити голосування',
+        help: p?.expected
+          ? `Проголосувало ${p.totalVotes} з ${p.expected}. Натисни, коли всі готові — далі почне виступати журі.`
+          : 'Натисни, коли всі проголосували — далі почне виступати журі.',
+        run: runStep(() => api.events.close(event.id)),
+      };
+    }
+    if (status === 'CLOSED') {
+      return {
+        label: '🎬 Почати розкриття голосів глядачів',
+        help: 'Спершу онови бали журі нижче — вони одразу з’являються на екрані. Тисни цю кнопку, коли журі закінчило.',
+        run: runStep(() => api.events.reveal(event.id)),
+      };
+    }
+    if (status === 'REVEALED' && !revealDone) {
+      return {
+        label: `▶ Додати голоси глядачів (${revealStep}/${revealTotal})`,
+        help: 'Кожне натискання додає до балів журі приховані голоси ще однієї команди.',
+        run: runStep(() => api.events.euroNext(event.id)),
+      };
+    }
+    return {
+      label: '✓ Завершити подію',
+      help: 'Зафіксує підсумковий бал (журі + глядачі) у турнірній таблиці.',
+      run: runStep(() => api.events.complete(event.id)),
+    };
   };
 
   return (
@@ -87,7 +185,7 @@ export function AdminControlPage() {
                 <div className="text-[13px] font-bold text-ink">
                   {typeOf(e.type).icon} {e.name}
                 </div>
-                <div className="text-[11px] font-semibold text-ink-soft">{e.status}</div>
+                <div className="text-[11px] font-semibold text-ink-soft">{STATUS_LABEL[e.status]}</div>
               </button>
             ))}
             {events.length === 0 && (
@@ -96,41 +194,52 @@ export function AdminControlPage() {
           </div>
         </div>
 
-        {selected && (
+        {selected && status && (
           <div className="rounded-2xl border border-[#eef0f2] bg-[#f8f9fb] p-4">
             <div className="mb-1 font-display text-base text-ink">{selected.name}</div>
-            <div className="mb-3 text-[11px] font-semibold text-ink-soft">
-              {typeOf(selected.type).title} · статус {status}
+            <div className="mb-4 text-[11px] font-semibold text-ink-soft">
+              {typeOf(selected.type).title} · статус {STATUS_LABEL[status]}
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" onClick={showOnScreen}>
-                📺 Показати на екрані
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => act(() => api.events.lobby(selected.id))}>
-                Лобі
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => act(() => api.events.open(selected.id))}>
-                Відкрити голосування
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => act(() => api.events.close(selected.id))}>
-                Закрити
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => act(() => api.events.reveal(selected.id))}>
-                Розкрити
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => act(() => api.events.euroNext(selected.id))}>
-                ▶ Наступний крок
-              </Button>
-              <Button size="sm" onClick={() => act(() => api.events.complete(selected.id))}>
-                ✓ Завершити
-              </Button>
-            </div>
+            {selected.participantMode === 'ADHOC' && (
+              <AdhocTeamsManager eventId={selected.id} onChange={setTeams} />
+            )}
 
-            {(selected.type === 'JURY' || selected.type === 'HYBRID') && (
+            {(() => {
+              const step = nextStep(selected);
+              if (!step) {
+                return (
+                  <div className="rounded-xl border border-accent-green/30 bg-accent-green/10 px-4 py-3 text-[12.5px] font-bold text-accent-green">
+                    ✓ Подію завершено — бали вже в турнірній таблиці.
+                  </div>
+                );
+              }
+              return (
+                <div>
+                  <Button
+                    onClick={step.run}
+                    size="lg"
+                    className="h-auto w-full whitespace-normal bg-ink py-4 text-center leading-snug"
+                  >
+                    {step.label}
+                  </Button>
+                  <p className="mt-2 text-[11.5px] font-semibold leading-snug text-ink-soft">
+                    {step.help}
+                  </p>
+                </div>
+              );
+            })()}
+
+            {error && (
+              <div className="mt-3 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-[11.5px] font-bold text-red-600">
+                ⚠️ {error}
+              </div>
+            )}
+
+            {selected.type === 'EURO' && status === 'CLOSED' && (
               <div className="mt-5">
                 <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-ink-soft">
-                  Бали журі
+                  Бали журі — з'являються на екрані одразу
                 </div>
                 <div className="grid grid-cols-1 gap-2">
                   {teams.map((t) => (
@@ -157,6 +266,13 @@ export function AdminControlPage() {
                 </div>
               </div>
             )}
+
+            <button
+              onClick={showOnScreen}
+              className="mt-5 text-[11.5px] font-bold text-ink-faint underline decoration-dotted underline-offset-2 hover:text-ink-soft"
+            >
+              📺 Ще раз показати цю подію на екрані
+            </button>
           </div>
         )}
       </div>

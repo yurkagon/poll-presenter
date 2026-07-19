@@ -8,7 +8,7 @@ import {
 
 import { PrismaService } from '../../infra/prisma/prisma.service';
 import { ParticipantService } from '../participant/participant.service';
-import { VoteProgress, VoteResultRow, VoteResults } from '../../../shared/types';
+import { VoteProgress } from '../../../shared/types';
 
 // Eurovision medal → raw points contributed by one ranked vote.
 const EURO_MEDAL_POINTS: Record<number, number> = { 1: 3, 2: 2, 3: 1 };
@@ -20,40 +20,13 @@ export class VoteService {
     private readonly participants: ParticipantService,
   ) {}
 
-  public async castVote(
-    eventId: string,
-    deviceId: string,
-    targetTeamId: string,
-  ): Promise<VoteProgress> {
-    const event = await this.requireOpenEvent(eventId);
-    if (!['SIMPLE_VOTE', 'HYBRID'].includes(event.type)) {
-      throw new BadRequestException('This event does not accept simple votes');
-    }
-
-    const participant = await this.participants.resolveVotingParticipant(deviceId);
-    if (targetTeamId === participant.teamId) {
-      throw new ForbiddenException('Cannot vote for your own team');
-    }
-    await this.requireTeam(targetTeamId);
-
-    try {
-      await this.prisma.vote.create({
-        data: { eventId, participantId: participant.id, targetTeamId, rank: 0 },
-      });
-    } catch (e) {
-      throw this.asConflict(e);
-    }
-
-    return this.progress(eventId);
-  }
-
   public async castEuroVote(
     eventId: string,
     deviceId: string,
     ranking: string[],
   ): Promise<VoteProgress> {
     const event = await this.requireOpenEvent(eventId);
-    if (event.type !== 'EURO_VOTE') {
+    if (event.type !== 'EURO') {
       throw new BadRequestException('This event is not a Eurovision vote');
     }
     if (ranking.length !== 3 || new Set(ranking).size !== 3) {
@@ -91,44 +64,18 @@ export class VoteService {
     return this.progress(eventId);
   }
 
-  /** Team → raw count (simple votes) or raw euro points, depending on event type. */
-  public async tally(eventId: string, type: string): Promise<VoteResultRow[]> {
-    if (type === 'EURO_VOTE') {
-      const rows = await this.prisma.vote.findMany({
-        where: { eventId, rank: { gt: 0 } },
-        select: { targetTeamId: true, rank: true },
-      });
-      const points: Record<string, number> = {};
-      for (const r of rows) {
-        points[r.targetTeamId] =
-          (points[r.targetTeamId] ?? 0) + (EURO_MEDAL_POINTS[r.rank] ?? 0);
-      }
-      return Object.entries(points).map(([teamId, count]) => ({ teamId, count }));
-    }
-
-    const grouped = await this.prisma.vote.groupBy({
-      by: ['targetTeamId'],
-      where: { eventId, rank: 0 },
-      _count: { _all: true },
+  /** teamId → raw Eurovision-medal points from the hidden 3-team rankings. */
+  public async rawScoreMap(eventId: string): Promise<Record<string, number>> {
+    const rows = await this.prisma.vote.findMany({
+      where: { eventId, rank: { gt: 0 } },
+      select: { targetTeamId: true, rank: true },
     });
-    return grouped.map((g) => ({ teamId: g.targetTeamId, count: g._count._all }));
-  }
-
-  /** teamId → raw score map (for storing audienceRaw / deriving placement). */
-  public async rawScoreMap(
-    eventId: string,
-    type: string,
-  ): Promise<Record<string, number>> {
-    const rows = await this.tally(eventId, type);
-    const map: Record<string, number> = {};
-    for (const r of rows) map[r.teamId] = r.count;
-    return map;
-  }
-
-  public async results(eventId: string): Promise<VoteResults> {
-    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
-    if (!event) throw new NotFoundException('Event not found');
-    return { eventId, results: await this.tally(eventId, event.type) };
+    const points: Record<string, number> = {};
+    for (const r of rows) {
+      points[r.targetTeamId] =
+        (points[r.targetTeamId] ?? 0) + (EURO_MEDAL_POINTS[r.rank] ?? 0);
+    }
+    return points;
   }
 
   public async progress(eventId: string): Promise<VoteProgress> {
@@ -154,12 +101,6 @@ export class VoteService {
       throw new ConflictException('Voting is not open for this event');
     }
     return event;
-  }
-
-  private async requireTeam(teamId: string) {
-    const team = await this.prisma.team.findUnique({ where: { id: teamId } });
-    if (!team) throw new NotFoundException('Team not found');
-    return team;
   }
 
   private asConflict(e: unknown): Error {

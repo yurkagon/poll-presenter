@@ -26,6 +26,10 @@ export class CreateTeamDto {
   @IsInt()
   @Min(0)
   public order?: number;
+
+  @IsOptional()
+  @IsString()
+  public eventId?: string;
 }
 
 export class UpdateTeamDto {
