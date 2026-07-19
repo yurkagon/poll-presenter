@@ -1,4 +1,5 @@
-import type { Team, EventSnapshot, VoteResults } from '@shared/types';
+import type { Team, EventSnapshot } from '@shared/types';
+import { rankIndices } from '@shared/ranking';
 import { BigScreen } from '@/components/frames/BigScreen';
 import { cn } from '@/lib/utils';
 
@@ -16,18 +17,18 @@ const BAR_BG = [
  */
 export function PodiumView({
   snapshot,
-  results,
   teamById,
   revealStep,
 }: {
   snapshot: EventSnapshot;
-  results: VoteResults | null;
   teamById: (id: string) => Team | undefined;
   revealStep: number;
 }) {
   const placement = snapshot.result?.placement ?? [];
-  const countOf = (teamId: string) =>
-    results?.results.find((r) => r.teamId === teamId)?.count ?? 0;
+  const scores = (snapshot.result?.scores ?? {}) as Record<string, number>;
+  const countOf = (teamId: string) => scores[teamId] ?? 0;
+  // Tie-aware rank per position — equal scores share the same place.
+  const ranks = rankIndices(placement, scores);
 
   const total = placement.length;
   // reveal order: last..4th (bottom-up), then 3rd, 2nd, 1st
@@ -61,6 +62,7 @@ export function PodiumView({
           const team = teamById(top3[rankIdx]);
           if (!team) return null;
           const shown = isRevealed(rankIdx);
+          const rank = ranks[rankIdx];
           return (
             <div
               key={rankIdx}
@@ -69,7 +71,7 @@ export function PodiumView({
                 shown ? 'opacity-100 translate-y-0' : 'translate-y-8 opacity-0',
               )}
             >
-              <div className="text-[26px]">{MEDALS[rankIdx]}</div>
+              <div className="text-[26px]">{MEDALS[rank]}</div>
               <div
                 className="flex h-[52px] w-[52px] items-center justify-center rounded-full border-[3px] border-white/25 text-[22px]"
                 style={{ background: team.color }}
@@ -80,16 +82,16 @@ export function PodiumView({
                 {team.name}
               </div>
               <div className="text-[11px] font-bold text-[#9db3c8]">
-                {countOf(team.id)} голосів
+                {countOf(team.id)} балів
               </div>
               <div
                 className={cn(
                   'flex w-full items-start justify-center rounded-t-2xl pt-2.5 font-display font-bold text-[#0a1424]',
-                  BAR_H[rankIdx],
+                  BAR_H[rank],
                 )}
-                style={{ background: BAR_BG[rankIdx] }}
+                style={{ background: BAR_BG[rank] }}
               >
-                {rankIdx + 1}
+                {rank + 1}
               </div>
             </div>
           );
@@ -110,7 +112,7 @@ export function PodiumView({
                   isRevealed(rankIdx) ? 'opacity-100' : 'opacity-0',
                 )}
               >
-                <span className="w-4 font-extrabold text-[#8ea2b6]">{rankIdx + 1}</span>
+                <span className="w-4 font-extrabold text-[#8ea2b6]">{ranks[rankIdx] + 1}</span>
                 <span
                   className="flex h-5 w-5 items-center justify-center rounded-full text-[11px]"
                   style={{ background: team.color }}
@@ -118,7 +120,7 @@ export function PodiumView({
                   {team.icon}
                 </span>
                 <span className="flex-1 font-bold">{team.name}</span>
-                <span className="font-bold text-[#9db3c8]">{countOf(team.id)} голосів</span>
+                <span className="font-bold text-[#9db3c8]">{countOf(team.id)} балів</span>
               </div>
             );
           })}

@@ -15,7 +15,6 @@ import {
   EventSnapshot,
   LobbySnapshot,
   VoteProgress,
-  VoteResults,
   JuryScoreDto,
   LeaderboardDto,
   EuroRevealEntry,
@@ -75,10 +74,6 @@ export class RealtimeGateway implements OnGatewayInit {
 
   public emitVoteProgress(progress: VoteProgress): void {
     this.server.to(ROOM).emit(WS_EVENTS.VOTE_PROGRESS, progress);
-  }
-
-  public emitResults(results: VoteResults): void {
-    this.server.to(ROOM).emit(WS_EVENTS.RESULTS_UPDATED, results);
   }
 
   public emitJury(eventId: string, scores: JuryScoreDto[]): void {

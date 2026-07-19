@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../infra/prisma/prisma.service';
 import { JuryScoreDto } from '../../../shared/types';
@@ -12,6 +12,12 @@ export class JuryService {
     teamId: string,
     delta: number,
   ): Promise<JuryScoreDto[]> {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event not found');
+    if (event.type !== 'EURO') {
+      throw new BadRequestException('This event does not accept jury points');
+    }
+
     await this.prisma.juryScore.upsert({
       where: { eventId_teamId: { eventId, teamId } },
       update: { points: { increment: delta } },

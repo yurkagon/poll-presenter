@@ -8,7 +8,8 @@ import { LeaderboardView } from './presenter/LeaderboardView';
 import { EuroRevealView } from './presenter/EuroRevealView';
 
 function PresenterInner() {
-  const { teams, gameState, snapshot, lobby, results, euro, teamById } = useGame();
+  const { teams, eventTeams, gameState, snapshot, lobby, euro, teamById } = useGame();
+  const eventTeamById = (id: string) => eventTeams.find((t) => t.id === id);
 
   if (gameState.displayMode === 'LEADERBOARD') {
     return <LeaderboardView teams={teams} teamById={(id) => teamById(id)!} />;
@@ -19,29 +20,31 @@ function PresenterInner() {
     const revealStep =
       euro && euro.eventId === event.id ? euro.step : event.revealStep;
     const euroPhase =
-      euro && euro.eventId === event.id ? euro.phase : 'jury';
+      euro && euro.eventId === event.id ? euro.phase : 'audience';
 
-    if (event.type === 'JURY') {
-      return <JuryView snapshot={snapshot} teams={teams} />;
+    if (event.type === 'EURO') {
+      if (event.status === 'OPEN') {
+        return <WaitingView snapshot={snapshot} />;
+      }
+      if (event.status === 'REVEALED' || event.status === 'COMPLETED') {
+        return (
+          <EuroRevealView snapshot={snapshot} teams={eventTeams} step={revealStep} phase={euroPhase} />
+        );
+      }
+      if (event.status === 'CLOSED') {
+        // Voting is closed and hidden — jury announces live, shown as it's entered.
+        return <JuryView snapshot={snapshot} teams={eventTeams} />;
+      }
     }
-    if (event.type === 'EURO_VOTE' && (event.status === 'REVEALED' || event.status === 'COMPLETED')) {
-      return (
-        <EuroRevealView snapshot={snapshot} teams={teams} step={revealStep} phase={euroPhase} />
-      );
+
+    if (event.type === 'SCORE_ENTRY') {
+      if (event.status === 'CLOSED' || event.status === 'REVEALED' || event.status === 'COMPLETED') {
+        return (
+          <PodiumView snapshot={snapshot} teamById={eventTeamById} revealStep={revealStep} />
+        );
+      }
     }
-    if (event.status === 'OPEN') {
-      return <WaitingView snapshot={snapshot} />;
-    }
-    if (event.status === 'CLOSED' || event.status === 'REVEALED' || event.status === 'COMPLETED') {
-      return (
-        <PodiumView
-          snapshot={snapshot}
-          results={results}
-          teamById={(id) => teamById(id)!}
-          revealStep={revealStep}
-        />
-      );
-    }
+
     // LOBBY / DRAFT → get-ready
     return (
       <BigScreen live="ГОТУЄМОСЬ" title={event.name} subtitle="Скоро почнемо…">

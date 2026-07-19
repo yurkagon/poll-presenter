@@ -2,12 +2,11 @@ import { ensureDeviceId } from '@/lib/identity';
 import { GameProvider, useGame } from '@/context/GameProvider';
 import { ParticipantProvider, useParticipant } from '@/context/ParticipantProvider';
 import { TeamSelectView } from './participant/TeamSelectView';
-import { SimpleVoteView } from './participant/SimpleVoteView';
 import { EuroVoteView } from './participant/EuroVoteView';
 import { PhoneStatus } from './participant/PhoneStatus';
 
 function ParticipantInner() {
-  const { teams, snapshot, teamById } = useGame();
+  const { teams, eventTeams, snapshot, teamById } = useGame();
   const { ready, myTeamId, hasVotedFor } = useParticipant();
   const myTeam = teamById(myTeamId);
 
@@ -33,11 +32,9 @@ function ParticipantInner() {
         />
       );
     }
-    if (event.type === 'SIMPLE_VOTE' || event.type === 'HYBRID') {
-      return <SimpleVoteView event={event} teams={teams} myTeamId={myTeamId} />;
-    }
-    if (event.type === 'EURO_VOTE') {
-      return <EuroVoteView event={event} teams={teams} myTeamId={myTeamId} />;
+    if (event.type === 'EURO') {
+      const voteTargets = event.participantMode === 'ADHOC' ? eventTeams : teams;
+      return <EuroVoteView event={event} teams={voteTargets} myTeamId={myTeamId} />;
     }
   }
 

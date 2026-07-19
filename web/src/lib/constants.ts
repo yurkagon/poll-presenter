@@ -1,8 +1,9 @@
 import type {
   EventCategory,
+  EventStatus,
   EventType,
-  EventWeight,
   ParticipantMode,
+  EventWeight,
 } from '@shared/types';
 import { BASE_POINTS, WEIGHT_MULTIPLIER } from '@shared/types';
 
@@ -27,40 +28,16 @@ export const EVENT_TYPES: {
   desc: string;
 }[] = [
   {
-    id: 'SIMPLE_VOTE',
-    icon: '🗳️',
-    title: 'Просте голосування',
-    desc: 'Кожен голосує за одну команду (не свою) — наживо.',
+    id: 'SCORE_ENTRY',
+    icon: '🏆',
+    title: 'Введення балів',
+    desc: 'Подія вже відбулась — внеси бали команд, застосунок сам порахує місця.',
   },
   {
-    id: 'EURO_VOTE',
+    id: 'EURO',
     icon: '🎤',
-    title: 'Голосування «Євро»',
-    desc: 'Кожен роздає 🥇🥈🥉 трьом різним командам.',
-  },
-  {
-    id: 'JURY',
-    icon: '⚖️',
-    title: 'Режим журі',
-    desc: 'Ведучий додає бали командам вручну, наживо.',
-  },
-  {
-    id: 'PLACEMENT',
-    icon: '🏁',
-    title: 'Місця (1–2–3…)',
-    desc: 'Ведучий вносить фінальні місця — бали за таблицею.',
-  },
-  {
-    id: 'HYBRID',
-    icon: '🎭',
-    title: 'Журі + глядачі',
-    desc: 'Голоси глядачів і бали журі сумуються порівну.',
-  },
-  {
-    id: 'INDIVIDUAL',
-    icon: '🌟',
-    title: 'Особиста відзнака',
-    desc: 'Нагороджує людей; на рахунок команд не впливає.',
+    title: 'Євро',
+    desc: 'Таємне голосування глядачів + бали журі наживо → фінал балансує обидва голоси порівну.',
   },
 ];
 
@@ -77,8 +54,16 @@ export const PARTICIPANT_MODES: {
 }[] = [
   { id: 'TEAMS', label: 'Таборові команди', desc: 'Усі команди зміни змагаються як зазвичай.' },
   { id: 'ADHOC', label: 'Збірні групи', desc: 'Тимчасові групи. За замовч. не впливають на рейтинг.' },
-  { id: 'INDIVIDUALS', label: 'Окремі учасники', desc: 'Особисті номінації — не командний залік.' },
 ];
+
+export const STATUS_LABEL: Record<EventStatus, string> = {
+  DRAFT: 'чернетка',
+  LOBBY: 'лобі',
+  OPEN: 'йде голосування',
+  CLOSED: 'закрито',
+  REVEALED: 'розкрито',
+  COMPLETED: 'завершено',
+};
 
 /** Fallback palette when a team has no color from the backend. */
 export const TEAM_PALETTE = [

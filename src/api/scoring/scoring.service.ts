@@ -8,6 +8,7 @@ import {
   Team,
   LeaderboardRow,
 } from '../../../shared/types';
+import { rankIndices } from '../../../shared/ranking';
 
 /**
  * Pure, stateless scoring. Takes plain data, returns plain data — reused by the
@@ -24,29 +25,25 @@ export class ScoringService {
     return Math.round(BASE_POINTS[rankIndex] * this.weightMultiplier(weight));
   }
 
-  /** Ordered teamIds (1st..last) → { teamId: points }. */
-  public placementToPoints(
-    orderedTeamIds: string[],
-    weight: EventWeight,
-  ): Record<string, number> {
-    const out: Record<string, number> = {};
-    orderedTeamIds.forEach((teamId, i) => {
-      out[teamId] = this.rankToPoints(i, weight);
-    });
-    return out;
-  }
-
-  /** Rank a raw-score map into placement points (highest raw = rank 0). */
+  /**
+   * Rank a raw-score map into points. Equal raw values share the same rank
+   * (and therefore the same points) — standard competition ranking.
+   */
   private rawToPoints(
     raw: Record<string, number>,
     weight: EventWeight,
   ): Record<string, number> {
     const ordered = Object.keys(raw).sort((a, b) => (raw[b] ?? 0) - (raw[a] ?? 0));
-    return this.placementToPoints(ordered, weight);
+    const ranks = rankIndices(ordered, raw);
+    const out: Record<string, number> = {};
+    ordered.forEach((teamId, i) => {
+      out[teamId] = this.rankToPoints(ranks[i], weight);
+    });
+    return out;
   }
 
   /**
-   * HYBRID: rank audience raw and jury raw independently into points, then sum
+   * EURO: rank audience raw and jury raw independently into points, then sum
    * (Eurovision principle — equal weight).
    */
   public hybridPoints(
@@ -71,20 +68,14 @@ export class ScoringService {
     if (!event.affectsScore) return {};
 
     switch (event.type) {
-      case 'PLACEMENT':
-      case 'SIMPLE_VOTE':
-      case 'EURO_VOTE':
-        return this.placementToPoints(result.placement ?? [], event.weight);
-      case 'HYBRID':
+      case 'SCORE_ENTRY':
+        return this.rawToPoints(result.scores ?? {}, event.weight);
+      case 'EURO':
         return this.hybridPoints(
           result.audienceRaw ?? {},
           result.juryRaw ?? {},
           event.weight,
         );
-      case 'JURY':
-        // jury raw scores ranked into placement points
-        return this.rawToPoints(result.juryRaw ?? {}, event.weight);
-      case 'INDIVIDUAL':
       default:
         return {};
     }

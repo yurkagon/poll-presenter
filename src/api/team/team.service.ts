@@ -8,8 +8,9 @@ import { CreateTeamDto, UpdateTeamDto } from './dto/team.dto';
 export class TeamService {
   public constructor(private readonly prisma: PrismaService) {}
 
-  public list() {
-    return this.prisma.team.findMany({ orderBy: { order: 'asc' } });
+  /** `eventId: null` (default) = permanent camp roster; pass an id for a single event's ad-hoc teams. */
+  public list(eventId: string | null = null) {
+    return this.prisma.team.findMany({ where: { eventId }, orderBy: { order: 'asc' } });
   }
 
   public async get(id: string) {
@@ -19,9 +20,10 @@ export class TeamService {
   }
 
   public async create(dto: CreateTeamDto) {
-    const order = dto.order ?? (await this.nextOrder());
+    const eventId = dto.eventId ?? null;
+    const order = dto.order ?? (await this.nextOrder(eventId));
     return this.prisma.team.create({
-      data: { name: dto.name, icon: dto.icon, color: dto.color, order },
+      data: { name: dto.name, icon: dto.icon, color: dto.color, order, eventId },
     });
   }
 
@@ -35,8 +37,11 @@ export class TeamService {
     await this.prisma.team.delete({ where: { id } });
   }
 
-  private async nextOrder(): Promise<number> {
-    const last = await this.prisma.team.findFirst({ orderBy: { order: 'desc' } });
+  private async nextOrder(eventId: string | null): Promise<number> {
+    const last = await this.prisma.team.findFirst({
+      where: { eventId },
+      orderBy: { order: 'desc' },
+    });
     return (last?.order ?? 0) + 1;
   }
 }

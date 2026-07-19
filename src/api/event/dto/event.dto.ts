@@ -14,16 +14,9 @@ import {
 } from '../../../../shared/types';
 
 const CATEGORIES: EventCategory[] = ['PUNCT', 'SPORT', 'CREATIVE', 'GENERAL'];
-const TYPES: EventType[] = [
-  'PLACEMENT',
-  'HYBRID',
-  'INDIVIDUAL',
-  'SIMPLE_VOTE',
-  'EURO_VOTE',
-  'JURY',
-];
+const TYPES: EventType[] = ['SCORE_ENTRY', 'EURO'];
 const WEIGHTS: EventWeight[] = ['NORMAL', 'BIG', 'KEY'];
-const MODES: ParticipantMode[] = ['TEAMS', 'ADHOC', 'INDIVIDUALS'];
+const MODES: ParticipantMode[] = ['TEAMS', 'ADHOC'];
 
 export class CreateEventDto {
   @IsString()

@@ -6,7 +6,6 @@ import type {
   EventSnapshot,
   LobbySnapshot,
   VoteProgress,
-  VoteResults,
   JuryScoreDto,
   LeaderboardDto,
   GameState,
@@ -139,15 +138,13 @@ export const api = {
     complete: (id: string) => post(`/events/${id}/complete`) as Promise<EventSnapshot>,
     enterResult: (id: string, payload: EnterResultPayload) =>
       post(`/events/${id}/result`, payload) as Promise<EventSnapshot>,
-    results: (id: string) => request<VoteResults>(`/events/${id}/results`),
     jury: (id: string) => request<JuryScoreDto[]>(`/events/${id}/jury`),
     addJury: (id: string, teamId: string, points: number) =>
       post(`/events/${id}/jury`, { teamId, points }) as Promise<JuryScoreDto[]>,
+    teams: (id: string) => request<Team[]>(`/events/${id}/teams`),
   },
 
   votes: {
-    cast: (eventId: string, deviceId: string, targetTeamId: string) =>
-      post(`/events/${eventId}/votes`, { deviceId, targetTeamId }) as Promise<VoteProgress>,
     castEuro: (eventId: string, deviceId: string, ranking: string[]) =>
       post(`/events/${eventId}/euro-votes`, { deviceId, ranking }) as Promise<VoteProgress>,
   },
