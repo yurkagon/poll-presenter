@@ -13,7 +13,7 @@
     "dev:frontend": "vite --config web/vite.config.ts",
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "vite build --config web/vite.config.ts",
-    "build:backend": "tsc -p tsconfig.json --skipLibCheck",
+    "build:backend": "prisma generate && tsc -p tsconfig.json --skipLibCheck",
     "start": "node dist/src/main",
     "prod": "npm run build && pm2 start dist/src/main.js --name poll-presenter",
     "db": "docker compose up -d",
