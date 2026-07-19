@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import type { Team, EventDto, EventSnapshot } from '@shared/types';
+import type { Team, EventDto, EventSnapshot, GameState } from '@shared/types';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { TeamAvatar } from '@/components/team/TeamAvatar';
@@ -13,11 +13,16 @@ export function AdminControlPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<EventSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [gameState, setGameState] = useState<GameState>({
+    displayMode: 'LOBBY',
+    activeEventId: null,
+  });
 
   const loadEvents = useCallback(() => api.events.list().then(setEvents).catch(() => {}), []);
 
   useEffect(() => {
     loadEvents();
+    api.game.state().then(setGameState).catch(() => {});
   }, [loadEvents]);
 
   const refreshSnapshot = useCallback(
@@ -45,7 +50,7 @@ export function AdminControlPage() {
 
   const showOnScreen = async () => {
     if (!selectedId) return;
-    await api.game.setDisplay({ displayMode: 'EVENT', activeEventId: selectedId });
+    setGameState(await api.game.setDisplay({ displayMode: 'EVENT', activeEventId: selectedId }));
   };
 
   const friendlyError = (e: unknown): string => {
@@ -157,11 +162,19 @@ export function AdminControlPage() {
       <h2 className="mb-4 font-display text-lg text-ink">Керування показом</h2>
 
       <div className="mb-5 flex flex-wrap gap-2">
-        <Button variant="secondary" onClick={() => api.game.setDisplay({ displayMode: 'LOBBY' })}>
-          🖥 Лобі / QR
+        <Button
+          variant="secondary"
+          className={cn(gameState.displayMode === 'LOBBY' && 'bg-ink text-white hover:bg-ink/90')}
+          onClick={() => api.game.setDisplay({ displayMode: 'LOBBY' }).then(setGameState)}
+        >
+          🖥 Лобі / QR{gameState.displayMode === 'LOBBY' && ' · на екрані'}
         </Button>
-        <Button variant="secondary" onClick={() => api.game.setDisplay({ displayMode: 'LEADERBOARD' })}>
-          📊 Турнірна таблиця
+        <Button
+          variant="secondary"
+          className={cn(gameState.displayMode === 'LEADERBOARD' && 'bg-ink text-white hover:bg-ink/90')}
+          onClick={() => api.game.setDisplay({ displayMode: 'LEADERBOARD' }).then(setGameState)}
+        >
+          📊 Турнірна таблиця{gameState.displayMode === 'LEADERBOARD' && ' · на екрані'}
         </Button>
       </div>
 
