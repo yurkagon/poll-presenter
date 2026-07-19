@@ -13,10 +13,21 @@ export class RedisService implements OnModuleDestroy {
       host: this.configService.getOrThrow<string>('REDIS_HOST'),
       port: Number(this.configService.getOrThrow<string>('REDIS_PORT')),
       password: this.configService.get<string>('REDIS_PASSWORD') || undefined,
+      // Fail fast instead of hanging a request when Redis is unreachable:
+      // commands reject immediately while disconnected (caller falls back to DB),
+      // and a single command never queues a long retry chain.
+      enableOfflineQueue: false,
+      maxRetriesPerRequest: 1,
+      connectTimeout: 5000,
+      // Keep trying to reconnect (capped) so caching resumes when Redis returns.
+      retryStrategy: (times) => Math.min(times * 500, 5000),
     });
 
     this.redisClient.on('error', (error: unknown) => {
-      this.logger.error('Redis connection error', error);
+      // Log once at debug level — a full stack per reconnect attempt is noise.
+      this.logger.debug(
+        `Redis connection error: ${(error as Error)?.message ?? error}`,
+      );
     });
   }
 
@@ -47,16 +58,30 @@ export class RedisService implements OnModuleDestroy {
       return strategy();
     }
 
-    const redisData = await this.get(key);
-
-    if (redisData) {
-      return JSON.parse(redisData) as T;
+    // Cache is an optimization, never a hard dependency: if Redis is down,
+    // fall back to the source of truth instead of failing the request.
+    try {
+      const redisData = await this.get(key);
+      if (redisData) {
+        return JSON.parse(redisData) as T;
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Redis unavailable — bypassing cache for "${key}": ${(error as Error)?.message ?? error}`,
+      );
+      return strategy();
     }
 
     const data = await strategy();
 
     if (!isEmpty(data)) {
-      await this.save(key, JSON.stringify(data), ttl);
+      try {
+        await this.save(key, JSON.stringify(data), ttl);
+      } catch (error) {
+        this.logger.warn(
+          `Redis save failed for "${key}": ${(error as Error)?.message ?? error}`,
+        );
+      }
     }
 
     return data;
