@@ -186,7 +186,9 @@ export interface LeaderboardFilters {
 
 // ─── Scoring constants (shared so the frontend can preview identical numbers) ───
 
-export const BASE_POINTS = [12, 10, 8, 6, 4, 2, 1] as const;
+// Flatter than a "12..1" ladder on purpose — the podium still stands out,
+// but last place isn't crushed, especially once a KEY (×2) event multiplies it.
+export const BASE_POINTS = [12, 10, 9, 8, 7, 6, 5] as const;
 export const WEIGHT_MULTIPLIER: Record<EventWeight, number> = {
   NORMAL: 1,
   BIG: 1.5,
