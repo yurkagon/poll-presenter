@@ -25,6 +25,16 @@ export class ParticipantController {
     return this.participants.lobbySnapshot();
   }
 
+  // Un-assign everyone from their team before a new day — votes untouched.
+  @Authorization()
+  @Post('reset')
+  public async resetTeams() {
+    await this.participants.resetTeams();
+    const lobby = await this.participants.lobbySnapshot();
+    this.realtime.emitLobby(lobby);
+    return lobby;
+  }
+
   @Post()
   public upsert(@Body() dto: UpsertParticipantDto) {
     return this.participants.upsertByDevice(dto.deviceId, dto.name);

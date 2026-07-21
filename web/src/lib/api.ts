@@ -112,6 +112,7 @@ export const api = {
       patch(`/participants/${deviceId}/team`, { teamId }) as Promise<Participant>,
     lobby: () => request<LobbySnapshot>('/participants/lobby'),
     roster: () => request<(Participant & { team: Team | null })[]>('/participants/roster'),
+    resetTeams: () => post('/participants/reset') as Promise<LobbySnapshot>,
   },
 
   events: {

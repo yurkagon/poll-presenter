@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import type { Team, EventDto, EventSnapshot, GameState } from '@shared/types';
+import type { Team, EventDto, EventSnapshot, GameState, LobbySnapshot } from '@shared/types';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { TeamAvatar } from '@/components/team/TeamAvatar';
@@ -17,13 +17,26 @@ export function AdminControlPage() {
     displayMode: 'LOBBY',
     activeEventId: null,
   });
+  const [lobby, setLobby] = useState<LobbySnapshot>({ teams: [], totalParticipants: 0 });
 
   const loadEvents = useCallback(() => api.events.list().then(setEvents).catch(() => {}), []);
 
   useEffect(() => {
     loadEvents();
     api.game.state().then(setGameState).catch(() => {});
+    api.participants.lobby().then(setLobby).catch(() => {});
   }, [loadEvents]);
+
+  const resetParticipants = async () => {
+    if (
+      !window.confirm(
+        `Скинути прив'язку до команд для ${lobby.totalParticipants} учасників? Голоси й історія збережуться — просто всім треба буде наново обрати команду.`,
+      )
+    ) {
+      return;
+    }
+    setLobby(await api.participants.resetTeams());
+  };
 
   const refreshSnapshot = useCallback(
     (id: string) => api.events.snapshot(id).then(setSnapshot).catch(() => {}),
@@ -176,6 +189,18 @@ export function AdminControlPage() {
         >
           📊 Турнірна таблиця{gameState.displayMode === 'LEADERBOARD' && ' · на екрані'}
         </Button>
+      </div>
+
+      <div className="mb-5 flex items-center gap-3 rounded-xl border border-[#eef0f2] bg-[#f8f9fb] px-4 py-3">
+        <div className="flex-1 text-[12.5px] font-semibold text-ink-soft">
+          👥 Приєднано учасників: <span className="font-extrabold text-ink">{lobby.totalParticipants}</span>
+        </div>
+        <button
+          onClick={resetParticipants}
+          className="text-[11.5px] font-bold text-red-500 underline decoration-dotted underline-offset-2 hover:text-red-600"
+        >
+          🔄 Скинути перед новим днем
+        </button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

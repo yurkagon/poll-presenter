@@ -42,6 +42,18 @@ export class ParticipantService {
     });
   }
 
+  /**
+   * Un-assign every participant from their team (e.g. before a new day) —
+   * votes and participant history are untouched, only the lobby "joined"
+   * count resets. Returning participants just pick a team again.
+   */
+  public async resetTeams(): Promise<{ count: number }> {
+    return this.prisma.participant.updateMany({
+      where: { teamId: { not: null } },
+      data: { teamId: null },
+    });
+  }
+
   public async lobbySnapshot(): Promise<LobbySnapshot> {
     const [grouped, total] = await Promise.all([
       this.prisma.participant.groupBy({
