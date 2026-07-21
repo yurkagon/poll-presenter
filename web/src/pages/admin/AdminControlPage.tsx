@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { Team, EventDto, EventSnapshot, GameState, LobbySnapshot } from '@shared/types';
 import { api } from '@/lib/api';
+import { joinLive, useSocketEvent, EV } from '@/lib/socket';
 import { Button } from '@/components/ui/button';
 import { TeamAvatar } from '@/components/team/TeamAvatar';
 import { AdhocTeamsManager } from '@/components/team/AdhocTeamsManager';
@@ -25,7 +26,11 @@ export function AdminControlPage() {
     loadEvents();
     api.game.state().then(setGameState).catch(() => {});
     api.participants.lobby().then(setLobby).catch(() => {});
+    joinLive('presenter');
   }, [loadEvents]);
+
+  // Keep the joined-participant count live as people join/reset, without a reload.
+  useSocketEvent<LobbySnapshot>(EV.LOBBY_UPDATED, useCallback((l) => setLobby(l), []));
 
   const resetParticipants = async () => {
     if (
