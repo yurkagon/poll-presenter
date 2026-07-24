@@ -15,7 +15,7 @@ export function LobbyGrid({
   const max = Math.max(1, ...lobby.teams.map((t) => t.count));
 
   return (
-    <div className="grid flex-1 grid-cols-2 gap-3.5 md:grid-cols-4">
+    <div className="grid flex-1 grid-cols-2 gap-3.5 md:grid-cols-3">
       {teams.map((team) => {
         const count = countOf(team.id);
         const mine = team.id === myTeamId;
