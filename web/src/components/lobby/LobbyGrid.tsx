@@ -38,18 +38,18 @@ export function LobbyGrid({
                 ТИ ТУТ
               </span>
             )}
-            <div className="relative z-[1] flex items-center gap-2.5">
+            <div className="relative z-[1] flex items-center gap-4">
               <div
-                className="flex h-[30px] w-[30px] items-center justify-center rounded-full text-sm"
+                className="flex h-16 w-16 items-center justify-center rounded-full text-3xl"
                 style={{ background: team.color }}
               >
                 {team.icon}
               </div>
-              <div className="text-[12.5px] font-bold leading-tight">{team.name}</div>
+              <div className="text-2xl font-extrabold leading-tight">{team.name}</div>
             </div>
-            <div className="relative z-[1] mt-3.5 font-display text-3xl">
+            <div className="relative z-[1] mt-4 font-display text-5xl">
               {count}
-              <small className="mt-0.5 block font-sans text-[11px] font-bold text-[#8ea2b6]">
+              <small className="mt-1 block font-sans text-sm font-bold text-[#8ea2b6]">
                 учасників
               </small>
             </div>
