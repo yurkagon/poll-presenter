@@ -1,14 +1,15 @@
 import type { Team, EventSnapshot } from '@shared/types';
+import { BASE_POINTS, WEIGHT_MULTIPLIER } from '@shared/types';
 import { rankIndices } from '@shared/ranking';
+import { audienceScore, round1, MAX_EURO } from '@shared/euro';
 import { BigScreen } from '@/components/frames/BigScreen';
-import { useCountUp } from '@/hooks/useCountUp';
 import { cn } from '@/lib/utils';
 
 /**
- * Eurovision-style reveal: jury points are already known (shown live while
- * the event was CLOSED), so this reveals hidden audience points team-by-team
- * on top of them, then the final ranking. Driven by `step` (1..n) and `phase`
- * from the EURO_REVEAL broadcast.
+ * Eurovision-style reveal. Jury marks (0–12 each) are already visible; this
+ * reveals the hidden audience score (0–12, normalized) team-by-team on top,
+ * for a combined 0–24. Then it shows how the combined scores convert to places
+ * → tournament points (so a 0.1 gap = a place apart, but both map to 12/10/8…).
  */
 export function EuroRevealView({
   snapshot,
@@ -22,144 +23,159 @@ export function EuroRevealView({
   phase: 'audience' | 'done';
 }) {
   const audienceRaw = (snapshot.result?.audienceRaw ?? {}) as Record<string, number>;
-  const juryMap: Record<string, number> = {};
-  for (const j of snapshot.jury) juryMap[j.teamId] = j.points;
+  const voters = snapshot.result?.audienceVoters ?? 0;
+  const mult = WEIGHT_MULTIPLIER[snapshot.event.weight] ?? 1;
+
+  const juryOf = (teamId: string) =>
+    snapshot.jury.find((j) => j.teamId === teamId)?.points ?? 0;
+  const audOf = (teamId: string) => audienceScore(audienceRaw[teamId] ?? 0, voters);
 
   const ordered = [...teams].sort((a, b) => a.order - b.order);
   const audienceRevealed = Math.min(step, teams.length);
 
-  const scoreFor = (idx: number, teamId: string) => {
-    const jury = juryMap[teamId] ?? 0;
-    const aud = idx < audienceRevealed ? audienceRaw[teamId] ?? 0 : 0;
-    return { jury, aud, total: jury + aud };
-  };
-
-  const maxTotal = Math.max(
-    1,
-    ...teams.map((t) => (juryMap[t.id] ?? 0) + (audienceRaw[t.id] ?? 0)),
+  // Combined (full) score used for the final ranking + conversion.
+  const fullTotals = Object.fromEntries(
+    teams.map((t) => [t.id, juryOf(t.id) + audOf(t.id)]),
   );
-
-  const finalRanked = [...teams]
-    .map((t) => ({ team: t, total: (juryMap[t.id] ?? 0) + (audienceRaw[t.id] ?? 0) }))
-    .sort((a, b) => b.total - a.total);
-  const winnerTotal = finalRanked[0]?.total ?? 0;
-  // Tie-aware rank — equal totals share the same place.
-  const finalTotals = Object.fromEntries(finalRanked.map((r) => [r.team.id, r.total]));
+  const finalRanked = [...teams].sort((a, b) => fullTotals[b.id] - fullTotals[a.id]);
   const finalRanks = rankIndices(
-    finalRanked.map((r) => r.team.id),
-    finalTotals,
+    finalRanked.map((r) => r.id),
+    fullTotals,
   );
+  const tournamentPoints = (rank: number) =>
+    rank < BASE_POINTS.length ? Math.round(BASE_POINTS[rank] * mult) : 0;
 
   return (
     <BigScreen
       brandIcon="🎤"
       live="ТВОРЧИЙ ВЕЧІР · РЕВІЛ"
       liveTone="gold"
-      title={phase === 'done' ? '🏆 Переможець ночі!' : 'Оголошуємо бали глядачів'}
+      title={phase === 'done' ? '🏆 Підсумок вечора' : 'Оголошуємо бали глядачів'}
       subtitle={
         phase === 'done'
-          ? 'Підсумковий рейтинг цієї події'
-          : 'Додаємо таємні голоси глядачів до балів журі'
+          ? 'Бали журі + глядачів → місця → бали в таблицю'
+          : `Додаємо таємні голоси ${voters} глядачів до балів журі`
       }
     >
       <div className="mb-3 flex justify-center gap-5 text-xs font-bold text-[#9db3c8]">
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded" style={{ background: '#3ad0ff' }} /> Бали журі
+          <span className="h-3 w-3 rounded" style={{ background: '#3ad0ff' }} /> Журі
+          (макс 12)
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded" style={{ background: '#ffcb3d' }} /> Бали глядачів
+          <span className="h-3 w-3 rounded" style={{ background: '#ffcb3d' }} /> Глядачі
+          (макс 12)
         </span>
       </div>
 
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-3">
-        {ordered.map((team, idx) => {
-          const { jury, aud, total } = scoreFor(idx, team.id);
-          const isWinner = phase === 'done' && total === winnerTotal && total > 0;
-          return (
-            <EuroRow
-              key={team.id}
-              team={team}
-              jury={jury}
-              aud={aud}
-              total={total}
-              maxTotal={maxTotal}
-              isWinner={isWinner}
-            />
-          );
-        })}
-      </div>
+      {phase !== 'done' && (
+        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-3">
+          {ordered.map((team, idx) => {
+            const jury = juryOf(team.id);
+            const aud = idx < audienceRevealed ? audOf(team.id) : 0;
+            return (
+              <div
+                key={team.id}
+                className="grid grid-cols-[34px_150px_1fr_130px] items-center gap-3"
+              >
+                <div
+                  className="flex h-[34px] w-[34px] items-center justify-center rounded-full text-[15px]"
+                  style={{ background: team.color }}
+                >
+                  {team.icon}
+                </div>
+                <div className="truncate text-[12.5px] font-extrabold">{team.name}</div>
+                <div className="flex h-[22px] overflow-hidden rounded-lg bg-white/[0.06]">
+                  <div
+                    className="h-full transition-all duration-700"
+                    style={{
+                      width: `${(jury / MAX_EURO) * 100}%`,
+                      background: 'linear-gradient(90deg,#3d7fe0,#3ad0ff)',
+                    }}
+                  />
+                  <div
+                    className="h-full transition-all duration-700"
+                    style={{
+                      width: `${(aud / MAX_EURO) * 100}%`,
+                      background: 'linear-gradient(90deg,#ffcb3d,#ff9f45)',
+                    }}
+                  />
+                </div>
+                <div className="text-right text-[11px] font-bold text-[#9db3c8]">
+                  <span style={{ color: '#3ad0ff' }}>{round1(jury)}</span>
+                  {' + '}
+                  <span style={{ color: '#ffcb3d' }}>{round1(aud)}</span>
+                  {' = '}
+                  <span className="font-display text-sm text-white">
+                    {round1(jury + aud)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {phase === 'done' && (
-        <div className="mx-auto mt-4 flex w-full max-w-2xl flex-col gap-1.5">
-          {finalRanked.map((r, i) => (
-            <div
-              key={r.team.id}
-              className={cn(
-                'flex items-center gap-2.5 rounded-lg border px-3 py-1.5 text-xs',
-                finalRanks[i] === 0
-                  ? 'border-[#ffcb3d]/35 bg-[#ffcb3d]/10'
-                  : 'border-white/[0.08] bg-white/[0.04]',
-              )}
-            >
-              <span className="w-4 font-extrabold text-[#8ea2b6]">{finalRanks[i] + 1}</span>
-              <span className="flex-1 font-bold">
-                {r.team.icon} {r.team.name}
-              </span>
-              <span className="font-bold text-[#9db3c8]">{r.total} балів</span>
-            </div>
-          ))}
+        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center">
+          <div className="mb-2 grid grid-cols-[36px_1fr_150px_110px] items-center gap-3 px-3 text-[10.5px] font-extrabold uppercase tracking-wide text-[#8ea2b6]">
+            <span>Місце</span>
+            <span>Команда</span>
+            <span className="text-right">Журі + глядачі</span>
+            <span className="text-right">У таблицю</span>
+          </div>
+          {finalRanked.map((team, i) => {
+            const rank = finalRanks[i];
+            const jury = juryOf(team.id);
+            const aud = audOf(team.id);
+            return (
+              <div
+                key={team.id}
+                className={cn(
+                  'grid grid-cols-[36px_1fr_150px_110px] items-center gap-3 rounded-xl border px-3 py-2.5',
+                  rank === 0
+                    ? 'border-[#ffcb3d]/40 bg-[#ffcb3d]/10'
+                    : 'border-white/[0.08] bg-white/[0.04]',
+                  'mb-1.5',
+                )}
+              >
+                <span
+                  className={cn(
+                    'font-display text-xl',
+                    rank === 0 ? 'text-[#ffcb3d]' : 'text-[#8ea2b6]',
+                  )}
+                >
+                  {rank + 1}
+                </span>
+                <span className="flex items-center gap-2 truncate font-bold">
+                  <span
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-sm"
+                    style={{ background: team.color }}
+                  >
+                    {team.icon}
+                  </span>
+                  {team.name}
+                </span>
+                <span className="text-right text-[12px] font-bold text-[#9db3c8]">
+                  <span style={{ color: '#3ad0ff' }}>{round1(jury)}</span> +{' '}
+                  <span style={{ color: '#ffcb3d' }}>{round1(aud)}</span> ={' '}
+                  <span className="font-display text-base text-white">
+                    {round1(jury + aud)}
+                  </span>
+                </span>
+                <span className="text-right font-display text-2xl text-white">
+                  +{tournamentPoints(rank)}
+                </span>
+              </div>
+            );
+          })}
+          <p className="mt-2 text-center text-[11.5px] font-semibold text-[#9db3c8]">
+            Навіть якщо різниця між командами лише 0.1 бала — це різні місця, і в
+            турнірну таблицю йдуть бали за місце (1-ше — {tournamentPoints(0)}, 2-ге —{' '}
+            {tournamentPoints(1)}, 3-тє — {tournamentPoints(2)}…).
+          </p>
         </div>
       )}
     </BigScreen>
-  );
-}
-
-function EuroRow({
-  team,
-  jury,
-  aud,
-  total,
-  maxTotal,
-  isWinner,
-}: {
-  team: Team;
-  jury: number;
-  aud: number;
-  total: number;
-  maxTotal: number;
-  isWinner: boolean;
-}) {
-  const shownTotal = useCountUp(total);
-
-  return (
-    <div className="grid grid-cols-[34px_140px_1fr_60px] items-center gap-3">
-      <div
-        className={cn(
-          'flex h-[34px] w-[34px] items-center justify-center rounded-full text-[15px] transition-shadow',
-          isWinner && 'shadow-[0_0_0_3px_#ffcb3d,0_0_18px_rgba(255,203,61,0.6)]',
-        )}
-        style={{ background: team.color }}
-      >
-        {team.icon}
-      </div>
-      <div className="truncate text-[12.5px] font-extrabold">{team.name}</div>
-      <div className="flex h-[22px] overflow-hidden rounded-lg bg-white/[0.06]">
-        <div
-          className="h-full transition-all duration-700"
-          style={{
-            width: `${(jury / maxTotal) * 100}%`,
-            background: 'linear-gradient(90deg,#3d7fe0,#3ad0ff)',
-          }}
-        />
-        <div
-          className="h-full transition-all duration-700"
-          style={{
-            width: `${(aud / maxTotal) * 100}%`,
-            background: 'linear-gradient(90deg,#ffcb3d,#ff9f45)',
-          }}
-        />
-      </div>
-      <div className="text-right font-display text-base">{shownTotal}</div>
-    </div>
   );
 }

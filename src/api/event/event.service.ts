@@ -122,8 +122,11 @@ export class EventService {
     const event = await this.require(id);
 
     if (event.type === 'EURO') {
-      const audienceRaw = await this.votes.rawScoreMap(id);
-      await this.upsertResult(id, { audienceRaw });
+      const [audienceRaw, audienceVoters] = await Promise.all([
+        this.votes.rawScoreMap(id),
+        this.votes.voterCount(id),
+      ]);
+      await this.upsertResult(id, { audienceRaw, audienceVoters });
     }
 
     const updated = await this.prisma.event.update({
@@ -266,6 +269,7 @@ export class EventService {
       placement: (result.placement as string[]) ?? [],
       scores: (result.scores as Record<string, number> | null) ?? null,
       audienceRaw: (result.audienceRaw as Record<string, number> | null) ?? null,
+      audienceVoters: result.audienceVoters ?? null,
       juryRaw: (result.juryRaw as Record<string, number> | null) ?? null,
       computedPoints: (result.computedPoints as Record<string, number>) ?? {},
     };
@@ -276,6 +280,7 @@ export class EventService {
       placement: [],
       scores: null,
       audienceRaw: null,
+      audienceVoters: null,
       juryRaw: null,
       computedPoints: {},
     };

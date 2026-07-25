@@ -5,8 +5,9 @@ model EventResult {
 
   placement      String[] @default([]) // ordered teamIds, best..worst (SCORE_ENTRY)
   scores         Json?    // { teamId: rawScore } manually entered for SCORE_ENTRY
-  audienceRaw    Json?    @map("audience_raw") // { teamId: rawScore } (EURO audience tally)
-  juryRaw        Json?    @map("jury_raw") // { teamId: rawScore } (EURO jury, frozen at COMPLETE)
+  audienceRaw    Json?    @map("audience_raw") // { teamId: rawMedalPoints } (EURO audience tally)
+  audienceVoters Int?     @map("audience_voters") // distinct voters, to normalize audience to 0..12
+  juryRaw        Json?    @map("jury_raw") // { teamId: score 0..12 } (EURO jury, frozen at COMPLETE)
   computedPoints Json     @default("{}") @map("computed_points") // { teamId: finalPoints } frozen at COMPLETE
 
   createdAt DateTime @default(now()) @map("created_at")

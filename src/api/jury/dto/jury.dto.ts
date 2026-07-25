@@ -1,10 +1,12 @@
-import { IsInt, IsString, MinLength } from 'class-validator';
+import { IsNumber, IsString, Max, Min, MinLength } from 'class-validator';
 
-export class AddJuryDto {
+export class SetJuryDto {
   @IsString()
   @MinLength(1)
   public teamId: string;
 
-  @IsInt()
-  public points: number;
+  @IsNumber()
+  @Min(0)
+  @Max(12)
+  public score: number;
 }

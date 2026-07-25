@@ -9,6 +9,7 @@ import {
   LeaderboardRow,
 } from '../../../shared/types';
 import { rankIndices } from '../../../shared/ranking';
+import { euroCombined } from '../../../shared/euro';
 
 /**
  * Pure, stateless scoring. Takes plain data, returns plain data — reused by the
@@ -43,19 +44,21 @@ export class ScoringService {
   }
 
   /**
-   * EURO: rank audience raw and jury raw independently into points, then sum
-   * (Eurovision principle — equal weight).
+   * EURO combined score per team (0..24): jury mark (0..12) + normalized
+   * audience score (0..12). Equal weight — 50% jury, 50% audience.
    */
-  public hybridPoints(
+  public euroCombinedScores(
     audienceRaw: Record<string, number>,
     juryRaw: Record<string, number>,
-    weight: EventWeight,
+    audienceVoters: number,
   ): Record<string, number> {
-    const aud = this.rawToPoints(audienceRaw, weight);
-    const jur = this.rawToPoints(juryRaw, weight);
     const out: Record<string, number> = {};
-    for (const teamId of new Set([...Object.keys(aud), ...Object.keys(jur)])) {
-      out[teamId] = (aud[teamId] ?? 0) + (jur[teamId] ?? 0);
+    for (const teamId of new Set([...Object.keys(audienceRaw), ...Object.keys(juryRaw)])) {
+      out[teamId] = euroCombined(
+        juryRaw[teamId] ?? 0,
+        audienceRaw[teamId] ?? 0,
+        audienceVoters,
+      );
     }
     return out;
   }
@@ -70,12 +73,17 @@ export class ScoringService {
     switch (event.type) {
       case 'SCORE_ENTRY':
         return this.rawToPoints(result.scores ?? {}, event.weight);
-      case 'EURO':
-        return this.hybridPoints(
+      case 'EURO': {
+        // Combine jury (0..12) + audience (0..12) into a 0..24 raw score, then
+        // rank teams by it → tournament points. A 0.1 gap still means a place
+        // apart, but both convert to the same 12/10/8… table.
+        const combined = this.euroCombinedScores(
           result.audienceRaw ?? {},
           result.juryRaw ?? {},
-          event.weight,
+          result.audienceVoters ?? 0,
         );
+        return this.rawToPoints(combined, event.weight);
+      }
       default:
         return {};
     }

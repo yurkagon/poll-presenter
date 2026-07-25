@@ -98,12 +98,27 @@ export function AdminControlPage() {
     }
   };
 
-  const addJury = async (teamId: string, points: number) => {
+  // Raw text per team so decimals (11.5) can be typed; committed on blur.
+  const [juryInput, setJuryInput] = useState<Record<string, string>>({});
+
+  const juryValue = (teamId: string) =>
+    juryInput[teamId] ??
+    String(snapshot?.jury.find((j) => j.teamId === teamId)?.points ?? '');
+
+  const commitJury = async (teamId: string) => {
     if (!selectedId) return;
+    const rawText = juryInput[teamId];
+    if (rawText === undefined) return; // nothing typed
+    const score = Math.min(12, Math.max(0, parseFloat(rawText.replace(',', '.')) || 0));
     setError(null);
     try {
-      await api.events.addJury(selectedId, teamId, points);
+      await api.events.setJury(selectedId, teamId, score);
       await refreshSnapshot(selectedId);
+      setJuryInput((s) => {
+        const next = { ...s };
+        delete next[teamId];
+        return next;
+      });
     } catch (e) {
       setError(friendlyError(e));
     }
@@ -281,8 +296,12 @@ export function AdminControlPage() {
 
             {selected.type === 'EURO' && status === 'CLOSED' && (
               <div className="mt-5">
-                <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-ink-soft">
-                  Бали журі — з'являються на екрані одразу
+                <div className="mb-1 text-[11px] font-extrabold uppercase tracking-wide text-ink-soft">
+                  Бали журі (0–12) — з'являються на екрані одразу
+                </div>
+                <div className="mb-2 text-[11px] font-semibold leading-snug text-ink-faint">
+                  Постав кожній команді оцінку від 0 до 12 (можна з десятковими, напр. 11.5).
+                  Це половина фінального балу — друга половина в глядачів.
                 </div>
                 <div className="grid grid-cols-1 gap-2">
                   {teams.map((t) => (
@@ -292,18 +311,24 @@ export function AdminControlPage() {
                     >
                       <TeamAvatar team={t} size={24} />
                       <span className="flex-1 text-[11.5px] font-bold text-ink">{t.name}</span>
-                      <span className="mr-1 text-xs font-bold text-ink-soft">
-                        {snapshot?.jury.find((j) => j.teamId === t.id)?.points ?? 0}
-                      </span>
-                      {[1, 3, 5].map((n) => (
-                        <button
-                          key={n}
-                          onClick={() => addJury(t.id, n)}
-                          className="rounded-md bg-ink px-2 py-1 text-[10px] font-extrabold text-white hover:bg-accent-blue"
-                        >
-                          +{n}
-                        </button>
-                      ))}
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0"
+                        className="w-16 rounded-lg border-[1.5px] border-[#e4e8eb] bg-[#fafbfc] px-2 py-1.5 text-center font-sans text-sm text-ink outline-none focus:border-accent-blue focus:bg-white"
+                        value={juryValue(t.id)}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (/^[0-9]*[.,]?[0-9]*$/.test(v)) {
+                            setJuryInput((s) => ({ ...s, [t.id]: v }));
+                          }
+                        }}
+                        onBlur={() => commitJury(t.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                        }}
+                      />
+                      <span className="text-[11px] font-bold text-ink-faint">/ 12</span>
                     </div>
                   ))}
                 </div>

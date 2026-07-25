@@ -4,7 +4,7 @@ model JuryScore {
   event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
   teamId  String @map("team_id")
   team    Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  points  Int    @default(0) // running total; "+N" increments this row
+  points  Float  @default(0) // jury mark 0..12 for this team (set directly, decimals allowed)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
