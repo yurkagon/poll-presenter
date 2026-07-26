@@ -84,10 +84,17 @@ function ResultForm({ event, onSaved }: { event: EventDto; onSaved: () => void }
 }
 
 function ScoreEntryForm({ event, teams, onSaved }: { event: EventDto; teams: Team[]; onSaved: () => void }) {
-  const [scores, setScores] = useState<Record<string, number>>({});
+  // Keep the raw text so the judge can type decimals (e.g. "11.5", "11,1")
+  // without the trailing separator being swallowed by number parsing.
+  const [raw, setRaw] = useState<Record<string, string>>({});
   const mult = weightOf(event.weight).mult;
 
-  const ranked = [...teams].sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0));
+  const numOf = (id: string) => parseFloat((raw[id] ?? '').replace(',', '.')) || 0;
+  const scores: Record<string, number> = Object.fromEntries(
+    teams.map((t) => [t.id, numOf(t.id)]),
+  );
+
+  const ranked = [...teams].sort((a, b) => scores[b.id] - scores[a.id]);
   const ranks = rankIndices(
     ranked.map((t) => t.id),
     scores,
@@ -123,10 +130,18 @@ function ScoreEntryForm({ event, teams, onSaved }: { event: EventDto; teams: Tea
             <TeamAvatar team={t} size={32} />
             <div className="text-[13px] font-bold text-ink">{t.name}</div>
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               className="w-20 text-center"
-              value={scores[t.id] ?? 0}
-              onChange={(e) => setScores((s) => ({ ...s, [t.id]: Number(e.target.value) || 0 }))}
+              placeholder="0"
+              value={raw[t.id] ?? ''}
+              onChange={(e) => {
+                const v = e.target.value;
+                // digits with an optional single decimal separator (dot or comma)
+                if (/^[0-9]*[.,]?[0-9]*$/.test(v)) {
+                  setRaw((s) => ({ ...s, [t.id]: v }));
+                }
+              }}
             />
             <div className="w-10 text-right font-display text-base text-ink">
               {event.affectsScore ? pts : '—'}

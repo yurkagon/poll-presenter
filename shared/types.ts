@@ -58,6 +58,8 @@ export interface EventResultData {
   placement: string[]; // ordered teamIds, best..worst
   scores?: Record<string, number> | null;
   audienceRaw?: Record<string, number> | null;
+  /** Distinct audience voters — used to normalize audienceRaw to a 0..12 score. */
+  audienceVoters?: number | null;
   juryRaw?: Record<string, number> | null;
   computedPoints: Record<string, number>;
 }
@@ -167,9 +169,9 @@ export interface EnterResultPayload {
   audienceRaw?: Record<string, number>;
 }
 
-export interface AddJuryPayload {
+export interface SetJuryPayload {
   teamId: string;
-  points: number;
+  score: number; // 0..12
 }
 
 export interface SetDisplayPayload {

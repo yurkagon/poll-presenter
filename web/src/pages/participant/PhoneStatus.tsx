@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Team } from '@shared/types';
 import { PhoneScreen } from '@/components/frames/PhoneScreen';
 import { TeamAvatar } from '@/components/team/TeamAvatar';
@@ -7,11 +8,13 @@ export function PhoneStatus({
   title,
   message,
   team,
+  action,
 }: {
   tag?: string;
   title: string;
   message: string;
   team?: Team | null;
+  action?: ReactNode;
 }) {
   return (
     <PhoneScreen tag={tag ?? 'єФрендшіп'} title={title}>
@@ -34,6 +37,7 @@ export function PhoneStatus({
             style={{ animationDelay: '0.3s' }}
           />
         </div>
+        {action && <div className="mt-2">{action}</div>}
       </div>
     </PhoneScreen>
   );

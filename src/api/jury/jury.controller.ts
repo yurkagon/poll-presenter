@@ -4,7 +4,7 @@ import { Authorization } from '../../common/decorators/authorization.decorator';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 
 import { JuryService } from './jury.service';
-import { AddJuryDto } from './dto/jury.dto';
+import { SetJuryDto } from './dto/jury.dto';
 
 @Controller('events')
 export class JuryController {
@@ -20,8 +20,8 @@ export class JuryController {
 
   @Authorization()
   @Post(':id/jury')
-  public async add(@Param('id') id: string, @Body() dto: AddJuryDto) {
-    const scores = await this.jury.addPoints(id, dto.teamId, dto.points);
+  public async set(@Param('id') id: string, @Body() dto: SetJuryDto) {
+    const scores = await this.jury.setScore(id, dto.teamId, dto.score);
     this.realtime.emitJury(id, scores);
     return scores;
   }

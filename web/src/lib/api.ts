@@ -140,8 +140,8 @@ export const api = {
     enterResult: (id: string, payload: EnterResultPayload) =>
       post(`/events/${id}/result`, payload) as Promise<EventSnapshot>,
     jury: (id: string) => request<JuryScoreDto[]>(`/events/${id}/jury`),
-    addJury: (id: string, teamId: string, points: number) =>
-      post(`/events/${id}/jury`, { teamId, points }) as Promise<JuryScoreDto[]>,
+    setJury: (id: string, teamId: string, score: number) =>
+      post(`/events/${id}/jury`, { teamId, score }) as Promise<JuryScoreDto[]>,
     teams: (id: string) => request<Team[]>(`/events/${id}/teams`),
   },
 

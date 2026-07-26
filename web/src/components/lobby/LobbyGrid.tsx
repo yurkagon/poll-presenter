@@ -15,7 +15,7 @@ export function LobbyGrid({
   const max = Math.max(1, ...lobby.teams.map((t) => t.count));
 
   return (
-    <div className="grid flex-1 grid-cols-2 gap-[1.1vw] md:grid-cols-4">
+    <div className="grid flex-1 grid-cols-2 gap-[1.1vw] md:grid-cols-3">
       {teams.map((team) => {
         const count = countOf(team.id);
         const mine = team.id === myTeamId;
@@ -38,18 +38,18 @@ export function LobbyGrid({
                 ТИ ТУТ
               </span>
             )}
-            <div className="relative z-[1] flex items-center gap-[0.9vw]">
+            <div className="relative z-[1] flex items-center gap-[1vw]">
               <div
-                className="flex h-[clamp(1.8rem,2.6vw,3rem)] w-[clamp(1.8rem,2.6vw,3rem)] items-center justify-center rounded-full text-[clamp(1rem,1.4vw,1.6rem)]"
+                className="flex h-[clamp(2.2rem,3.2vw,3.8rem)] w-[clamp(2.2rem,3.2vw,3.8rem)] items-center justify-center rounded-full text-[clamp(1.2rem,1.8vw,2.1rem)]"
                 style={{ background: team.color }}
               >
                 {team.icon}
               </div>
-              <div className="tv-body font-bold leading-tight">{team.name}</div>
+              <div className="text-[clamp(1.1rem,1.7vw,2rem)] font-extrabold leading-tight">{team.name}</div>
             </div>
-            <div className="relative z-[1] mt-[0.5vw] font-display text-[clamp(1.8rem,3.4vw,3.8rem)]">
+            <div className="relative z-[1] mt-[0.6vw] font-display text-[clamp(2.2rem,4vw,4.6rem)]">
               {count}
-              <small className="mt-[0.1vw] block font-sans tv-label font-bold text-[#8ea2b6]">
+              <small className="mt-[0.15vw] block font-sans tv-label font-bold text-[#8ea2b6]">
                 учасників
               </small>
             </div>

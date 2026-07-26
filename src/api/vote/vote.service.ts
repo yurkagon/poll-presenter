@@ -78,6 +78,16 @@ export class VoteService {
     return points;
   }
 
+  /** Distinct participants who cast a vote in this event. */
+  public async voterCount(eventId: string): Promise<number> {
+    const voters = await this.prisma.vote.findMany({
+      where: { eventId },
+      select: { participantId: true },
+      distinct: ['participantId'],
+    });
+    return voters.length;
+  }
+
   public async progress(eventId: string): Promise<VoteProgress> {
     const [voters, expected] = await Promise.all([
       this.prisma.vote.findMany({

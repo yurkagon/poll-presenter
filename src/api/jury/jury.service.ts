@@ -7,21 +7,22 @@ import { JuryScoreDto } from '../../../shared/types';
 export class JuryService {
   public constructor(private readonly prisma: PrismaService) {}
 
-  public async addPoints(
+  /** Set a team's jury mark (0..12) directly — this IS the jury score. */
+  public async setScore(
     eventId: string,
     teamId: string,
-    delta: number,
+    score: number,
   ): Promise<JuryScoreDto[]> {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Event not found');
     if (event.type !== 'EURO') {
-      throw new BadRequestException('This event does not accept jury points');
+      throw new BadRequestException('This event does not accept jury scores');
     }
 
     await this.prisma.juryScore.upsert({
       where: { eventId_teamId: { eventId, teamId } },
-      update: { points: { increment: delta } },
-      create: { eventId, teamId, points: delta },
+      update: { points: score },
+      create: { eventId, teamId, points: score },
     });
     return this.scores(eventId);
   }
