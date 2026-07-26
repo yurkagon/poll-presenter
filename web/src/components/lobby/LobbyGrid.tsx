@@ -15,7 +15,7 @@ export function LobbyGrid({
   const max = Math.max(1, ...lobby.teams.map((t) => t.count));
 
   return (
-    <div className="grid flex-1 grid-cols-2 gap-[1.1vw] md:grid-cols-3">
+    <div className="grid min-h-0 flex-1 auto-rows-fr grid-cols-2 gap-[1.1vw] md:grid-cols-3">
       {teams.map((team) => {
         const count = countOf(team.id);
         const mine = team.id === myTeamId;
@@ -23,7 +23,7 @@ export function LobbyGrid({
           <div
             key={team.id}
             className={cn(
-              'relative flex flex-col justify-between overflow-hidden rounded-[1.4vw] border p-[1.1vw]',
+              'relative flex min-h-0 flex-col justify-between overflow-hidden rounded-[1.4vw] border p-[1.1vw]',
               mine
                 ? 'border-glow/60 bg-glow/[0.08] shadow-[0_0_0_1px_rgba(58,208,255,0.3)]'
                 : 'border-white/10 bg-white/[0.055]',

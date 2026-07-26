@@ -58,7 +58,7 @@ export function BigScreen({
         </div>
       </header>
 
-      <main className="flex flex-1 flex-col px-[clamp(1.5rem,3vw,4rem)] pb-[clamp(1.5rem,3vw,4rem)] pt-[clamp(0.8rem,1.5vw,2rem)]">
+      <main className="flex min-h-0 flex-1 flex-col px-[clamp(1.5rem,3vw,4rem)] pb-[clamp(1.5rem,3vw,4rem)] pt-[clamp(0.8rem,1.5vw,2rem)]">
         {(title || subtitle) && (
           <div className="mb-[clamp(1rem,2vw,2.5rem)] mt-[clamp(0.5rem,1vw,1.5rem)] text-center">
             {title && <h3 className="font-display tv-h1">{title}</h3>}
