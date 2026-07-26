@@ -13,14 +13,14 @@ export function SegmentedControl<T extends string>({
   onChange,
 }: SegmentedControlProps<T>) {
   return (
-    <div className="mx-auto mb-3.5 flex w-fit gap-1 rounded-xl border border-white/[0.09] bg-white/[0.05] p-1">
+    <div className="mx-auto mb-[0.5vw] flex w-fit gap-[0.4vw] rounded-xl border border-white/[0.09] bg-white/[0.05] p-[0.3vw]">
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
           className={cn(
-            'rounded-lg px-4 py-2 font-sans text-[12.5px] font-bold transition-all',
+            'rounded-lg px-[1.1vw] py-[0.5vw] font-sans text-[clamp(0.85rem,1vw,1.15rem)] font-bold transition-all',
             value === o.value ? 'bg-white/15 text-white' : 'text-[#9db3c8]',
           )}
         >

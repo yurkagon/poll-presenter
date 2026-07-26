@@ -19,8 +19,15 @@ function PresenterInner() {
     const { event } = snapshot;
     const revealStep =
       euro && euro.eventId === event.id ? euro.step : event.revealStep;
+    // Fall back to deriving the phase from revealStep (not just the ephemeral
+    // WS `euro` state) so a reload mid-reveal doesn't re-hide already-shown
+    // audience scores.
     const euroPhase =
-      euro && euro.eventId === event.id ? euro.phase : 'audience';
+      euro && euro.eventId === event.id
+        ? euro.phase
+        : revealStep >= eventTeams.length
+          ? 'done'
+          : 'audience';
 
     if (event.type === 'EURO') {
       if (event.status === 'OPEN') {

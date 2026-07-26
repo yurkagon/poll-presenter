@@ -27,12 +27,12 @@ export function JuryView({
       title="Рахунок наживо"
       subtitle="Журі називає бали — ведучий додає їх, і всі бачать зміну одразу"
     >
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-2.5">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center gap-[0.35vw] overflow-hidden">
         {ranked.map((team, i) => (
           <JuryRow key={team.id} team={team} rank={ranks[i]} score={scoreOf(team.id)} max={max} />
         ))}
       </div>
-      <p className="mt-4 text-center text-xs text-[#9db3c8]">
+      <p className="mt-[0.8vw] text-center tv-label text-[#9db3c8]">
         Керування балами — на панелі ведучого
       </p>
     </BigScreen>
@@ -56,29 +56,29 @@ function JuryRow({
   return (
     <div
       className={cn(
-        'grid grid-cols-[30px_34px_1fr_auto] items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-500',
+        'grid grid-cols-[clamp(1.3rem,1.8vw,2rem)_clamp(1.7rem,2.4vw,2.8rem)_1fr_auto] items-center gap-[1vw] rounded-xl border px-[1.2vw] py-[0.4vw] transition-all duration-500',
         top ? 'border-[#ffcb3d]/35 bg-[#ffcb3d]/10' : 'border-white/[0.09] bg-white/[0.05]',
       )}
     >
-      <div className={cn('font-display text-[15px]', top ? 'text-[#ffcb3d]' : 'text-[#8ea2b6]')}>
+      <div className={cn('font-display text-[clamp(1rem,1.4vw,1.6rem)]', top ? 'text-[#ffcb3d]' : 'text-[#8ea2b6]')}>
         {rank + 1}
       </div>
       <div
-        className="flex h-[34px] w-[34px] items-center justify-center rounded-full text-[15px]"
+        className="flex h-[clamp(1.7rem,2.4vw,2.8rem)] w-[clamp(1.7rem,2.4vw,2.8rem)] items-center justify-center rounded-full text-[clamp(0.9rem,1.2vw,1.4rem)]"
         style={{ background: team.color }}
       >
         {team.icon}
       </div>
-      <div>
-        <div className="text-sm font-extrabold">{team.name}</div>
-        <div className="mt-1.5 h-[5px] overflow-hidden rounded bg-white/[0.08]">
+      <div className="min-w-0">
+        <div className="truncate text-[clamp(1.05rem,1.5vw,1.8rem)] font-extrabold">{team.name}</div>
+        <div className="mt-[0.3vw] h-[clamp(4px,0.5vw,8px)] overflow-hidden rounded bg-white/[0.08]">
           <div
             className="h-full rounded transition-all duration-500"
             style={{ width: `${(score / max) * 100}%`, background: team.color }}
           />
         </div>
       </div>
-      <div className="min-w-[52px] text-right font-display text-xl">{shown}</div>
+      <div className="min-w-[clamp(2.4rem,3.6vw,4.2rem)] text-right font-display text-[clamp(1.2rem,1.8vw,2.2rem)]">{shown}</div>
     </div>
   );
 }

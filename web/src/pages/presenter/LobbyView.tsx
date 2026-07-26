@@ -20,11 +20,11 @@ export function LobbyView({
     >
       <LobbyGrid teams={teams} lobby={lobby} myTeamId={myTeamId} />
 
-      <div className="mt-5 flex items-center justify-center gap-8">
-        <QRPanel size={72} />
+      <div className="mt-[0.4vw] flex items-center justify-center gap-[3vw]">
+        <QRPanel size={130} />
         <div className="text-center">
-          <div className="font-display text-2xl">{lobby.totalParticipants}</div>
-          <div className="text-[11px] font-bold uppercase tracking-wide text-[#8ea2b6]">
+          <div className="font-display text-[clamp(2.2rem,4vw,4rem)]">{lobby.totalParticipants}</div>
+          <div className="tv-label font-bold uppercase tracking-wide text-[#8ea2b6]">
             приєдналось
           </div>
         </div>

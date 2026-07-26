@@ -94,4 +94,18 @@
     border: 1px solid var(--ef-card-border);
     backdrop-filter: blur(6px);
   }
+
+  /*
+   * Big-screen (TV) type scale. Sized with clamp()/vw so a page shown
+   * full-screen on a distant TV scales up with the actual display's
+   * viewport instead of staying laptop-sized and unreadable from the room.
+   */
+  .tv-h1 { font-size: clamp(2.2rem, 3.8vw, 4.4rem); line-height: 1.08; }
+  .tv-h2 { font-size: clamp(1.5rem, 2.6vw, 3rem); line-height: 1.15; }
+  .tv-subtitle { font-size: clamp(1.05rem, 1.5vw, 1.8rem); }
+  .tv-hero { font-size: clamp(3.2rem, 7vw, 8.5rem); line-height: 1; }
+  .tv-num-lg { font-size: clamp(1.8rem, 3vw, 3.6rem); }
+  .tv-num { font-size: clamp(1.3rem, 2.2vw, 2.6rem); }
+  .tv-body { font-size: clamp(1.05rem, 1.4vw, 1.7rem); }
+  .tv-label { font-size: clamp(0.85rem, 1.05vw, 1.25rem); }
 }

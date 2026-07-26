@@ -59,14 +59,14 @@ export function LeaderboardView({
 
       {scope === 'day' && (
         <>
-          <div className="mb-3 flex flex-wrap justify-center gap-2">
+          <div className="mb-[0.5vw] flex flex-wrap justify-center gap-[0.4vw]">
             {days.map((d) => (
               <Chip key={d.id} tone="dark" active={d.id === dayId} onClick={() => setDayId(d.id)}>
                 {d.label}
               </Chip>
             ))}
           </div>
-          <div className="mb-4 flex flex-wrap justify-center gap-2">
+          <div className="mb-[0.6vw] flex flex-wrap justify-center gap-[0.4vw]">
             <Chip tone="dark" active={mode === 'cumulative'} onClick={() => setMode('cumulative')}>
               Накопичувально
             </Chip>
@@ -78,7 +78,7 @@ export function LeaderboardView({
       )}
 
       {scope === 'category' && (
-        <div className="mb-4 flex flex-wrap justify-center gap-2">
+        <div className="mb-[0.6vw] flex flex-wrap justify-center gap-[0.4vw]">
           {CATEGORIES.map((c) => (
             <Chip key={c.id} tone="dark" active={c.id === category} onClick={() => setCategory(c.id)}>
               {c.icon} {c.label}
@@ -87,7 +87,7 @@ export function LeaderboardView({
         </div>
       )}
 
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-2">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center gap-[0.3vw] overflow-hidden">
         {rows.map((row) => {
           const team = teamById(row.teamId);
           if (!team) return null;
@@ -96,34 +96,34 @@ export function LeaderboardView({
             <div
               key={row.teamId}
               className={cn(
-                'grid grid-cols-[30px_36px_1fr_auto] items-center gap-3.5 rounded-2xl border px-4 py-3 transition-all',
+                'grid grid-cols-[clamp(1.3rem,1.8vw,2rem)_clamp(1.7rem,2.4vw,2.8rem)_1fr_auto] items-center gap-[1vw] rounded-xl border px-[1.2vw] py-[0.32vw] transition-all',
                 top ? 'border-[#ffcb3d]/35 bg-[#ffcb3d]/10' : 'border-white/[0.09] bg-white/[0.045]',
               )}
             >
-              <div className={cn('font-display text-base', top ? 'text-[#ffcb3d]' : 'text-[#8ea2b6]')}>
+              <div className={cn('font-display text-[clamp(1rem,1.4vw,1.6rem)]', top ? 'text-[#ffcb3d]' : 'text-[#8ea2b6]')}>
                 {row.rank}
               </div>
               <div
-                className="flex h-9 w-9 items-center justify-center rounded-full text-base"
+                className="flex h-[clamp(1.7rem,2.4vw,2.8rem)] w-[clamp(1.7rem,2.4vw,2.8rem)] items-center justify-center rounded-full text-[clamp(0.9rem,1.2vw,1.4rem)]"
                 style={{ background: team.color }}
               >
                 {team.icon}
               </div>
               <div className="min-w-0">
-                <div className="truncate text-[13.5px] font-extrabold">{team.name}</div>
-                <div className="mt-1.5 h-1.5 max-w-[220px] overflow-hidden rounded bg-white/[0.06]">
+                <div className="truncate text-[clamp(1.05rem,1.5vw,1.8rem)] font-extrabold">{team.name}</div>
+                <div className="mt-[0.3vw] h-[clamp(4px,0.5vw,8px)] max-w-[26vw] overflow-hidden rounded bg-white/[0.06]">
                   <div
                     className="h-full transition-all duration-500"
                     style={{ width: `${(row.points / max) * 100}%`, background: team.color }}
                   />
                 </div>
               </div>
-              <div className="text-right font-display text-lg">{row.points}</div>
+              <div className="text-right font-display text-[clamp(1.2rem,1.8vw,2.2rem)]">{row.points}</div>
             </div>
           );
         })}
         {rows.length === 0 && (
-          <p className="mt-8 text-center text-sm text-[#9db3c8]">
+          <p className="mt-[3vw] text-center tv-subtitle text-[#9db3c8]">
             Ще немає завершених подій для підрахунку
           </p>
         )}

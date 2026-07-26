@@ -18,7 +18,7 @@ export function Chip({ active, tone = 'light', onClick, children, className }: C
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full font-sans font-bold transition-all',
         tone === 'dark'
-          ? 'border px-3.5 py-1.5 text-xs'
+          ? 'border px-[1vw] py-[0.4vw] text-[clamp(0.85rem,1vw,1.15rem)]'
           : 'rounded-xl border-[1.5px] px-4 py-2.5 text-[12.5px]',
         tone === 'dark' &&
           (active

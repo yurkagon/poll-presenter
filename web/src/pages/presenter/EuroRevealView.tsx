@@ -62,16 +62,16 @@ export function EuroRevealView({
           : 'Додаємо таємні голоси глядачів до балів журі'
       }
     >
-      <div className="mb-3 flex justify-center gap-5 text-xs font-bold text-[#9db3c8]">
-        <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded" style={{ background: '#3ad0ff' }} /> Бали журі
+      <div className="mb-[0.3vw] flex justify-center gap-[2vw] text-[clamp(0.8rem,0.95vw,1.1rem)] font-bold text-[#9db3c8]">
+        <span className="flex items-center gap-[0.6vw]">
+          <span className="h-[1vw] w-[1vw] rounded" style={{ background: '#3ad0ff' }} /> Бали журі
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded" style={{ background: '#ffcb3d' }} /> Бали глядачів
+        <span className="flex items-center gap-[0.6vw]">
+          <span className="h-[1vw] w-[1vw] rounded" style={{ background: '#ffcb3d' }} /> Бали глядачів
         </span>
       </div>
 
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-3">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center gap-[0.12vw] overflow-hidden">
         {ordered.map((team, idx) => {
           const { jury, aud, total } = scoreFor(idx, team.id);
           const isWinner = phase === 'done' && total === winnerTotal && total > 0;
@@ -90,22 +90,22 @@ export function EuroRevealView({
       </div>
 
       {phase === 'done' && (
-        <div className="mx-auto mt-4 flex w-full max-w-2xl flex-col gap-1.5">
+        <div className="mx-auto mt-[0.2vw] flex w-full max-w-5xl flex-1 flex-col justify-center gap-[0.12vw] overflow-hidden">
           {finalRanked.map((r, i) => (
             <div
               key={r.team.id}
               className={cn(
-                'flex items-center gap-2.5 rounded-lg border px-3 py-1.5 text-xs',
+                'flex items-center gap-[0.8vw] rounded-lg border px-[1vw] py-[0.12vw] text-[clamp(0.85rem,1.1vw,1.3rem)]',
                 finalRanks[i] === 0
                   ? 'border-[#ffcb3d]/35 bg-[#ffcb3d]/10'
                   : 'border-white/[0.08] bg-white/[0.04]',
               )}
             >
-              <span className="w-4 font-extrabold text-[#8ea2b6]">{finalRanks[i] + 1}</span>
-              <span className="flex-1 font-bold">
+              <span className="w-[1.6vw] font-extrabold text-[#8ea2b6]">{finalRanks[i] + 1}</span>
+              <span className="flex-1 truncate font-bold">
                 {r.team.icon} {r.team.name}
               </span>
-              <span className="font-bold text-[#9db3c8]">{r.total} балів</span>
+              <span className="shrink-0 font-bold text-[#9db3c8]">{r.total} балів</span>
             </div>
           ))}
         </div>
@@ -132,18 +132,18 @@ function EuroRow({
   const shownTotal = useCountUp(total);
 
   return (
-    <div className="grid grid-cols-[34px_140px_1fr_60px] items-center gap-3">
+    <div className="grid grid-cols-[clamp(1.4rem,2vw,2.3rem)_clamp(9rem,15vw,17rem)_1fr_clamp(2.4rem,3.6vw,4.2rem)] items-center gap-[0.9vw]">
       <div
         className={cn(
-          'flex h-[34px] w-[34px] items-center justify-center rounded-full text-[15px] transition-shadow',
+          'flex h-[clamp(1.4rem,2vw,2.3rem)] w-[clamp(1.4rem,2vw,2.3rem)] items-center justify-center rounded-full text-[clamp(0.8rem,1vw,1.2rem)] transition-shadow',
           isWinner && 'shadow-[0_0_0_3px_#ffcb3d,0_0_18px_rgba(255,203,61,0.6)]',
         )}
         style={{ background: team.color }}
       >
         {team.icon}
       </div>
-      <div className="truncate text-[12.5px] font-extrabold">{team.name}</div>
-      <div className="flex h-[22px] overflow-hidden rounded-lg bg-white/[0.06]">
+      <div className="truncate text-[clamp(0.95rem,1.3vw,1.6rem)] font-extrabold">{team.name}</div>
+      <div className="flex h-[clamp(0.7rem,1vw,1.2rem)] overflow-hidden rounded-lg bg-white/[0.06]">
         <div
           className="h-full transition-all duration-700"
           style={{
@@ -159,7 +159,7 @@ function EuroRow({
           }}
         />
       </div>
-      <div className="text-right font-display text-base">{shownTotal}</div>
+      <div className="text-right font-display text-[clamp(1.1rem,1.6vw,1.9rem)]">{shownTotal}</div>
     </div>
   );
 }
