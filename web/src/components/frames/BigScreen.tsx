@@ -2,6 +2,8 @@ import * as React from 'react';
 
 interface BigScreenProps {
   brandIcon?: string;
+  /** Part of the logo after the leading «є» (default «Френдшіп»). */
+  brandName?: string;
   live?: React.ReactNode;
   liveTone?: 'red' | 'gold';
   title?: React.ReactNode;
@@ -13,6 +15,7 @@ interface BigScreenProps {
 /** Full-viewport dark "big screen" surface for presenter/display screens. */
 export function BigScreen({
   brandIcon = '🤝',
+  brandName = 'Френдшіп',
   live,
   liveTone = 'red',
   title,
@@ -27,7 +30,7 @@ export function BigScreen({
           <span className="flex h-[clamp(2.2rem,3.2vw,4rem)] w-[clamp(2.2rem,3.2vw,4rem)] items-center justify-center rounded-lg bg-accent-blue text-[clamp(1.1rem,1.6vw,2rem)]">
             {brandIcon}
           </span>
-          є<span className="text-glow">Френдшіп</span>
+          є<span className="text-glow">{brandName}</span>
         </div>
         <div className="flex items-center gap-[1vw]">
           {live && (

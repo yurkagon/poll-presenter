@@ -15,6 +15,8 @@ import type {
   CreateEventPayload,
   EnterResultPayload,
   LeaderboardFilters,
+  PrayerPollState,
+  PrayerPollEntry,
 } from '@shared/types';
 
 const BASE = '/api';
@@ -87,6 +89,17 @@ export const api = {
       displayMode: GameState['displayMode'];
       activeEventId?: string | null;
     }) => request<GameState>('/game/display', { method: 'POST', body: JSON.stringify(payload) }),
+  },
+
+  prayerPoll: {
+    state: () => request<PrayerPollState>('/prayer-poll/state'),
+    vote: (deviceId: string, age: number) =>
+      post('/prayer-poll/votes', { deviceId, age }) as Promise<PrayerPollState>,
+    addManual: (age: number) => post('/prayer-poll/manual', { age }) as Promise<PrayerPollState>,
+    entries: () => request<PrayerPollEntry[]>('/prayer-poll/entries'),
+    remove: (id: string) => del(`/prayer-poll/entries/${id}`) as Promise<PrayerPollState>,
+    finish: () => post('/prayer-poll/finish') as Promise<PrayerPollState>,
+    reset: () => post('/prayer-poll/reset') as Promise<PrayerPollState>,
   },
 
   teams: {
