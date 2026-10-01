@@ -14,6 +14,7 @@ import { VoteModule } from './api/vote/vote.module';
 import { JuryModule } from './api/jury/jury.module';
 import { LeaderboardModule } from './api/leaderboard/leaderboard.module';
 import { EventModule } from './api/event/event.module';
+import { PrayerPollModule } from './api/prayer-poll/prayer-poll.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { EventModule } from './api/event/event.module';
     JuryModule,
     LeaderboardModule,
     EventModule,
+    PrayerPollModule,
   ],
 })
 export class AppModule {}

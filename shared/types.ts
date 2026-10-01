@@ -208,6 +208,7 @@ export const WS_EVENTS = {
   JURY_UPDATED: 'jury:updated',
   LEADERBOARD_UPDATED: 'leaderboard:updated',
   EURO_REVEAL: 'euro:reveal',
+  PRAYER_POLL_STATE: 'prayerpoll:state',
 } as const;
 
 export type PresenceRole = 'presenter' | 'screen' | 'participant';
@@ -215,4 +216,27 @@ export type PresenceRole = 'presenter' | 'screen' | 'participant';
 export interface PresenceJoinPayload {
   role: PresenceRole;
   deviceId?: string;
+}
+
+// ── Prayer poll (average age of the church) ────────────────────────────────
+
+export type PrayerPollStatus = 'OPEN' | 'FINISHED';
+
+export const PRAYER_POLL_MIN_AGE = 1;
+export const PRAYER_POLL_MAX_AGE = 120;
+
+export interface PrayerPollState {
+  status: PrayerPollStatus;
+  /** Bumped on reset so phones that already voted can detect a new round. */
+  round: number;
+  count: number;
+  /** Only filled once the poll is FINISHED (never leaks mid-vote). */
+  averageAge: number | null;
+}
+
+export interface PrayerPollEntry {
+  id: string;
+  age: number;
+  /** `phone` = sent from the participant's own device, `manual` = entered by the presenter. */
+  source: 'phone' | 'manual';
 }

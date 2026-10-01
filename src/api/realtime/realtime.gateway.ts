@@ -18,6 +18,7 @@ import {
   JuryScoreDto,
   LeaderboardDto,
   EuroRevealEntry,
+  PrayerPollState,
 } from '../../../shared/types';
 
 const ROOM = 'live';
@@ -86,5 +87,9 @@ export class RealtimeGateway implements OnGatewayInit {
 
   public emitEuroReveal(entry: EuroRevealEntry): void {
     this.server.to(ROOM).emit(WS_EVENTS.EURO_REVEAL, entry);
+  }
+
+  public emitPrayerPoll(state: PrayerPollState): void {
+    this.server.to(ROOM).emit(WS_EVENTS.PRAYER_POLL_STATE, state);
   }
 }
