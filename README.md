@@ -59,6 +59,18 @@ Vote state is stored in `localStorage` keyed by `voted:<sessionCode>:<questionId
   <img src="docs/screenshots/mobile.png" alt="Participant view (mobile)" width="320" />
 </p>
 
+## Talk show mode
+
+A separate mode for a talk show: **either/or polls** with live bars on the big screen, and **anonymous audience questions** that appear on the screen automatically. Open `/talk-show`.
+
+| Page | URL | |
+|---|---|---|
+| Screen | `/talk-show/screen` | projector: question + live bars, questions list or one question in big text, QR |
+| Host panel | `/talk-show/admin` | password-protected: create/start/close polls, next poll, hide results, hide/delete/feature questions, switch the screen, finish the show |
+| Audience | `/talk-show/join` | from the QR code: vote and send a question, no registration |
+
+The host panel password is hardcoded in `src/talk-show/talk-show-auth.service.ts`. One vote per device and a 10-second cooldown between questions (500 characters max) are enforced on the server. The conference session above is unchanged.
+
 ## Tech stack
 
 | Layer | Choice | Why |
