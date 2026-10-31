@@ -78,6 +78,36 @@ Mutating endpoints update state then call the gateway to broadcast. Don't broadc
 
 `web/src/lib/socket.ts` exports a single shared `Socket` and `onX(cb)` helpers that return unsubscribe functions — call them from `useEffect` cleanups.
 
+## Talk show mode (`/talk-show`)
+
+A second, independent mode next to the conference session: either/or polls plus anonymous audience questions, for one show of up to ~100 people. It shares only the socket.io server, the Vite app and the UI primitives — **don't touch `src/session/` to change it**.
+
+```
+src/talk-show/
+  talk-show.service.ts        in-memory state: polls, votes per device, questions, screen mode, finished
+  talk-show.controller.ts     REST under /api/talk-show/* (audience + host); controller broadcasts
+  talk-show.gateway.ts        socket.io, room `talkshow`, event `talkshow:state` (public snapshot)
+  talk-show-auth.service.ts   host login: env password → signed httpOnly cookie (12 h), login lockout
+  talk-show-admin.guard.ts    guards every host route
+shared/talk-show.ts           types, limits (500-char question, 10 s cooldown), WS event names
+web/src/pages/talk-show/      Home · Screen · Join · Admin (+ useTalkShow hook, JoinQr)
+web/src/lib/talk-show-api.ts  REST client; device-id.ts = anonymous per-browser id
+```
+
+| Route | Role |
+| --- | --- |
+| `/talk-show` | hub with the three links |
+| `/talk-show/screen` | read-only stage display (voting bars / questions list / QR) |
+| `/talk-show/admin` | host panel, password-protected |
+| `/talk-show/join` | phone page from the QR: vote + send a question |
+
+- **Auth**: the host password is hardcoded (`ADMIN_PASSWORD` in `talk-show-auth.service.ts`). Optional `TALK_SHOW_AUTH_SECRET` signs the cookie (defaults to the password). 10 wrong passwords per IP / 5 min → 429.
+- **Votes**: one per `deviceId` per poll, enforced on the server (`409 Already voted`). `GET /state?deviceId=` returns `myVote`, so a reload keeps the "voted" state.
+- **Results visibility**: while the host hides results, `results` is `null` in the public snapshot — counts never leave the server. The host view always has them.
+- **Questions**: auto-published, newest first; `hidden` ones are only in the host snapshot. Per-device cooldown → `429 { retryAfterMs }`.
+- **Finish** stops all intake and drops per-device data (vote ledger, cooldowns); aggregates and questions stay for the host. **Reset** wipes everything.
+- Like the rest of the app: state is in memory, a restart is a blank slate.
+
 ## Commands
 
 ```bash
@@ -95,12 +125,13 @@ In dev, hit `http://localhost:5173` — Vite proxies `/api` and `/socket.io` to 
 
 - `PORT` — HTTP port (required, `getOrThrow`).
 - `CORS_ORIGINS` — comma-separated allowed origins (required). Applied to both Express CORS and the socket.io `allowRequest` check.
+- `TALK_SHOW_AUTH_SECRET` — optional cookie signing key for the talk show mode.
 
 ## Conventions & gotchas
 
 - **Shared types are canonical.** When changing a payload, edit `shared/types.ts` first; backend and frontend both pick it up.
 - **Type-only imports on the frontend** (`import type { ... } from '@shared/types'`) — the file is path-aliased, not a package.
-- **No auth, no validation pipeline.** `class-validator` is in deps but not wired. Trust client input at your own risk; this is an MVP for a known audience.
+- **No auth, no validation pipeline** (conference session; the talk show host panel is the only password-protected part, and validates input by hand). `class-validator` is in deps but not wired. Trust client input at your own risk; this is an MVP for a known audience.
 - **No persistence.** Server restart = blank slate. Don't add file/db writes without flagging it — the in-memory design is intentional for the MVP.
 - **Image assets live under the backend** (`src/session/images/`) and are served at `/images/*`. Reference them from question data as `/images/qN.webp`.
 - **`subSession`** is rotated on reset so participant clients can detect "the session restarted" and clear local UI state — preserve this behavior if you touch `resetSession`.

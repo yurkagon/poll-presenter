@@ -103,6 +103,14 @@ export function HomePage() {
         <p className="text-xs text-gray-400">
           Presenter — керування; Screen — великий екран; Participant — телефон
         </p>
+
+        <button
+          type="button"
+          onClick={() => navigate('/talk-show')}
+          className="text-sm font-semibold text-violet-600 hover:underline"
+        >
+          🎙 Режим «Ток-шоу» →
+        </button>
       </div>
     </div>
   );
